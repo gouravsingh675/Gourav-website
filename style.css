@@ -1,0 +1,108 @@
+*{
+    padding:0;
+    margin: 0;
+    box-sizing: border-box;
+ }
+ body {
+    font-family: "Montserrat", sans-serif;
+    width: 100%;
+    height: 100vh;
+    /* left:2%; */
+    position:relative;
+    background-color:black;
+    background-repeat: no-repeat;
+    background-size:cover;
+    background-position: center;
+  }     
+        .image_1{
+            margin-left: 2%;
+            /* margin: 5px 100px; */
+        }
+        h1{
+            color:rgb(255, 255, 255);
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        }
+        p {
+            color:rgb(233, 227, 228);
+            font-size: 18px;
+            font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+        }
+        .special {
+            font-size: 25px;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            font-style: italic;
+            color:rgb(170, 255, 0);
+            margin-left: 15px;
+        }
+        .special2 {
+            font-family:'Times New Roman', Times, serif;
+            color:black;
+            text-align: center;
+        }
+
+        .button {
+            background-color: #4CAF50; /* Green */
+             border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 2px 1px;
+            /* margin-left: 1%; */
+            transition-duration: 0.4s;
+            cursor: pointer;
+        }
+        .button:hover{
+            background-color: #090808;
+            color: rgb(83, 27, 27);
+        }
+        .button1 {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 15px;
+            /* margin: 2px 1px; */
+            transition-duration: 0.4s;
+            cursor: pointer;
+        }
+        .button1:hover{
+            background-color: #090808;
+            color: rgb(83, 27, 27);
+        } 
+        .space {
+            width: 65px;
+            height: auto;
+            display: inline-block;
+        }
+        .chartCard {
+            width: 100vw;
+            height: calc(94vh - 90px);
+            background: black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+        .chartBox {
+            width: 900px;
+            padding: 3px;
+            border-radius: 20px;
+            margin: 3px 22px;
+            border: solid 3px black;
+            background: black;
+        }
+        .chartBox2 {
+            width: 620px;
+            border-radius: 20px;
+            border: solid 3px black;
+            background: black;
+        }
+
+        .green {
+            color:#4CAF50;
+        }

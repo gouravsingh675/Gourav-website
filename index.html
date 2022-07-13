@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<head>
+    <title>
+        Gourav
+    </title>
+    <link rel="icon" type="image/png" href='favicon.ico'>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link href="./css/header.css" rel="stylesheet" />
+    <link href="./css/main.css" rel="stylesheet" />
+    <link href="./css/footer.css" rel="stylesheet" />
+    <script>
+        var audio = new Audio("music.mp3");
+        function displayNextImage() {
+                  x = (x === images.length - 1) ? 0 : x + 1;
+                  document.getElementById("img").src = images[x];
+              }
+    
+              function displayPreviousImage() {
+                  x = (x <= 0) ? images.length - 1 : x - 1;
+                  document.getElementById("img").src = images[x];
+              }
+    
+              function startTimer() {
+                  setInterval(displayNextImage, 3000);
+              }
+    
+              var images = [], x = -1;
+              images[0] = "image1.jpeg";
+              images[1] = "image_2.jpg";
+              images[2] = "image3.jpg";
+              images[3]=  "image4.jpg";
+              images[4]= "pragyan_esi.jpeg"
+              images[5]="image_raju.jpg"
+              images[6]=  "startpicture.jpg"
+    </script>
+</head>
+<body  onload = "startTimer()">
+    <header>
+        <div class="container">
+           <div class="row">
+              <div class="brand-name">
+                 <a href="" class="logo">Welcome!</a>
+              </div>
+              <div class="hamburger">
+                 <i class="fa fa-bars"></i>
+              </div>
+              <div class="navbar">
+                 <ul>
+                    <li><a href="#home" class="active">Home</a></li>
+                    <li><a href="https://drive.google.com/file/d/1Tne38YChxfZ4mPZsONXsLUGuA-O-9YTO/view?usp=sharing" target="_blank">Resume</a></li>
+                    <li><a href="mailto:gouravsingh9199@gmail.com">Contact</a></li>
+                 </ul>
+              </div>
+           </div>
+        </div>
+     </header>
+    <br />
+    <br />
+    <br />
+    <div class="chartCard" id="myreport">
+        <div class="chartBox">
+            <h1>
+                Hello👋
+                <br>
+                I'm <span class="green">Gourav.</span></font-color> A Django developer, Machine learning & Competitive programming enthusiast.
+            </h1>
+            <br>
+            <p>I am a final year student at NIT Trichy.
+                I love Problem solving and believe in implementing strategic agility and lean principles for maximum productivity.
+                I did my summer internship at Tata steel during may,2022 to july 2022 on the project <b>"SQL to No SQL Migration and Data Retrieval".</b>
+            </p>
+            <br/>
+            <br/>
+            <footer>
+                <div class="container">
+                   <div class="row">
+                      <div class="footer-logo">Connect with me in my network😊</div>
+                      <div class="social-link">
+                         <a href="https://www.instagram.com/__gourav_singh_/" target="_blank"><i class="fa fa-instagram"></i></a>
+                         <a href="https://twitter.com/Gouavsingh675"  target="_blank"><i class="fa fa-twitter"></i></a>
+                         <a href="https://www.linkedin.com/in/gourav-kumar-singh-b25164191/" target="_blank"><i class="fa fa-linkedin"></i></a>
+                         <a href="https://github.com/gouravsingh675" target="_blank"><i class="fa fa-github" ></i></a>
+                         <a href="https://www.youtube.com/channel/UCKKbFAcxlz4ZUNrIDXVEFHw" target="_blank"><i class="fa fa-youtube" ></i></a>
+                      </div>
+                   </div>
+                </div>
+             </footer>
+        </div>
+        <div class="space">
+        </div>
+        <div class="space">
+        </div>
+        <div class="chartBox2">
+            <div class="space">
+            </div>
+            <span><img id="img" src="startpicture.jpg" width="515" height="515"/></span>  
+        </div>
+    </div>
+    <br/>
+    <br/>
+     <section class="copyright">
+        <div class="container">
+           <p>© <span id="year"></span> | Designed with ❤️ by Gourav</p>
+        </div>
+     </section>
+</body>
+</html>
