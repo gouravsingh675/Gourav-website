@@ -10,9 +10,31 @@
     <link href="./css/footer.css" rel="stylesheet" />
 
     <script src="https://assets.adoberesources.net/loader.js?orgId=7C75630961C0BAC70A495E36%40AdobeOrg&instanceId=tatasteel&env=prod&geo=va7"></script>
-    <style>
-        .hb_choice {max-width: 100%;}
-    </style>
+<style>
+    /* Add your existing CSS styles here */
+    .help-message {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: #333;
+        color: #fff;
+        padding: 20px 0;
+        text-align: center;
+        z-index: 9999; /* Ensure it appears above other content */
+    }
+</style>
+    <script>
+        setTimeout(function() {
+            document.addEventListener('DOMContentLoaded', function() {
+                var helpMessage = document.createElement('div');
+                helpMessage.className = 'help-message';
+                helpMessage.innerHTML = '<p>How may I help you?</p>';
+                document.body.appendChild(helpMessage);
+            });
+        }, 16000); // 16 seconds delay
+    </script>
+
     <script type="text/javascript">
         (function() {
           var didInit = false;
