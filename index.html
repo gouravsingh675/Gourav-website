@@ -33,31 +33,47 @@
           document.getElementsByTagName('head')[0].appendChild(s);
         })();
     </script>
-    <script>
-        var audio = new Audio("music.mp3");
-        function displayNextImage() {
-                  x = (x === images.length - 1) ? 0 : x + 1;
-                  document.getElementById("img").src = images[x];
-              }
-    
-              function displayPreviousImage() {
-                  x = (x <= 0) ? images.length - 1 : x - 1;
-                  document.getElementById("img").src = images[x];
-              }
-    
-              function startTimer() {
-                  setInterval(displayNextImage, 3000);
-              }
-    
-              var images = [], x = -1;
-              images[0] = "gourav_sportsfete.jpg";
-              images[1] = "image1.jpeg";
-              images[2] = "image_2.jpg";
-              images[3]=  "image4.jpg";
-              images[4]= "pragyan_esi.jpeg"
-              images[5]="street_play.jpg"
-              images[6]=  "my convocation photograph.jpg"
-    </script>
+<script>
+    var audio = new Audio("music.mp3");
+
+    function displayNextImage() {
+        x = (x === images.length - 1) ? 0 : x + 1;
+        document.getElementById("img").src = images[x];
+    }
+
+    function displayPreviousImage() {
+        x = (x <= 0) ? images.length - 1 : x - 1;
+        document.getElementById("img").src = images[x];
+    }
+
+    function startSlideshow() {
+        setInterval(displayNextImage, 3000);
+    }
+
+    function startTimer() {
+        console.log("Timer started...");
+        startSlideshow(); // Start the image slideshow
+
+        setTimeout(function() {
+            console.log("Timeout reached, creating message...");
+            var helpMessage = document.createElement('div');
+            helpMessage.className = 'help-message';
+            helpMessage.innerHTML = '<p>How may I help you?</p>';
+            document.body.appendChild(helpMessage);
+            console.log("Message created and appended to the body.");
+        }, 16000); // 16 seconds delay
+    }
+
+    var images = [], x = -1;
+    images[0] = "gourav_sportsfete.jpg";
+    images[1] = "image1.jpeg";
+    images[2] = "image_2.jpg";
+    images[3] = "image4.jpg";
+    images[4] = "pragyan_esi.jpeg"
+    images[5] = "street_play.jpg"
+    images[6] = "my convocation photograph.jpg"
+</script>
+
 </head>
 <body  onload = "startTimer()">
     <header>
