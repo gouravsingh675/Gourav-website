@@ -109,7 +109,7 @@
         .help-message {
             position: fixed;
             bottom: 10px; /* Adjust this value to set the distance from the bottom */
-            right: 20px; /* Adjust this value to set the distance from the right */
+            right: 40px; /* Adjust this value to set the distance from the right */
             color: #fff;
             padding: 5px 10px; /* Adjust padding as needed */
             border: 1px solid #fff; /* Thin border around the text */
