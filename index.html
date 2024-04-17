@@ -131,16 +131,19 @@
         </div>
      </section>
     <!-- JavaScript for displaying the help message -->
-    <script>
-        function startTimer() {
-            setTimeout(function() {
-                var helpMessage = document.createElement('div');
-                helpMessage.className = 'help-message';
-                helpMessage.innerHTML = '<p>How may I help you?</p>';
-                document.body.appendChild(helpMessage);
-                helpMessage.style.display = 'block'; // Display the message
-            }, 16000); // 16 seconds delay
-        }
-    </script>
+<script>
+    function startTimer() {
+        console.log("Timer started...");
+        setTimeout(function() {
+            console.log("Timeout reached, creating message...");
+            var helpMessage = document.createElement('div');
+            helpMessage.className = 'help-message';
+            helpMessage.innerHTML = '<p>How may I help you?</p>';
+            document.body.appendChild(helpMessage);
+            console.log("Message created and appended to the body.");
+        }, 16000); // 16 seconds delay
+    }
+</script>
+
 </body>
 </html>
