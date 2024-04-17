@@ -108,7 +108,7 @@
         }
 .help-message {
     position: fixed;
-    right: calc(2.5 * 20px); /* Adjust this value to set the distance from the right */
+    right: calc(2.5 * 7px); /* Adjust this value to set the distance from the right */
     bottom: auto; /* Automatically adjust the bottom margin based on content */
     color: #fff;
     padding: 5px 10px; /* Adjust padding as needed */
