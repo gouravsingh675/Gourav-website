@@ -11,17 +11,6 @@
 
     <script src="https://assets.adoberesources.net/loader.js?orgId=7C75630961C0BAC70A495E36%40AdobeOrg&instanceId=tatasteel&env=prod&geo=va7"></script>
 
-    <script>
-        setTimeout(function() {
-            document.addEventListener('DOMContentLoaded', function() {
-                var helpMessage = document.createElement('div');
-                helpMessage.className = 'help-message';
-                helpMessage.innerHTML = '<p>How may I help you?</p>';
-                document.body.appendChild(helpMessage);
-            });
-        }, 16000); // 16 seconds delay
-    </script>
-
     <script type="text/javascript">
         (function() {
           var didInit = false;
@@ -141,6 +130,16 @@
            <p>© <span id="year"></span> | Designed with ❤️ by Gourav</p>
         </div>
      </section>
-
+    <!-- JavaScript for displaying the help message -->
+    <script>
+        setTimeout(function() {
+            document.addEventListener('DOMContentLoaded', function() {
+                var helpMessage = document.createElement('div');
+                helpMessage.className = 'help-message';
+                helpMessage.innerHTML = '<p>How may I help you?</p>';
+                document.body.appendChild(helpMessage);
+            });
+        }, 16000); // 16 seconds delay
+    </script>
 </body>
 </html>
