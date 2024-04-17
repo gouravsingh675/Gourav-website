@@ -111,7 +111,7 @@
             bottom: 10px; /* Adjust this value to set the distance from the bottom */
             right: 80px; /* Adjust this value to set the distance from the right */
             color: #fff;
-            padding: 5px 10px; /* Adjust padding as needed */
+            padding: 3px 6px; /* Adjust padding as needed */
             border: 1px solid #fff; /* Thin border around the text */
             border-radius: 10px; /* Border radius for circle-rectangle shape */
             z-index: 9999; /* Ensure it appears above other content */
