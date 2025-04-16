@@ -1,0 +1,674 @@
+Existing js:
+          <div className="pagebreak" />
+          <div>
+            {/* Tab start */}
+            <div className="row hidden-print">
+              <div className="col-sm-10">
+                <div className="row">
+                  <div
+                    className="col-sm-3 productsummary-view-auto"
+                  >
+                    <div
+                      className={
+                        this.state.psummary
+                          ? 'tabControl-outerViewClass active prodSummary prodSummary-tab'
+                          : ' tabControl-outerViewClass inActive prodSummary prodSummary-tab'
+                      }
+                      onClick={() => {
+                        this.setState({
+                          psummary: true,
+                          skuCompliance: false,
+                          skuComplianceJCAP: false,
+                          materialDisp: false,
+                          placeholderText: 'Search by Product Category & SKU#',
+                          searchText: '',
+                        });
+                      }}
+                    >
+                      {this.state.psummary && <div className="headerViewCls" />}
+                      <div className="headerTextCls">
+                        <p
+                          className={
+                            this.state.psummary
+                              ? 'tabControl-title tabControl-activeText'
+                              : ' tabControl-title tabControl-inactiveText'
+                          }
+                        >
+                          Product Summary
+                        </p>
+                        {this.state.psummary && (
+                          <p
+                            className={
+                              this.state.psummary
+                                ? 'tabControl-rowCount tabControl-activeText'
+                                : ' tabControl-rowCount tabControl-inactiveText'
+                            }
+                          >
+                            {this.state.productTableLength} <span> Rows</span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    className="col-sm-3 productsummary-view-auto"
+                  >
+                    <div
+                      className={
+                        this.state.skuCompliance
+                          ? 'tabControl-outerViewClass active skuCompliance-tab '
+                          : ' tabControl-outerViewClass inActive skuCompliance-tab'
+                      }
+                      onClick={() => {
+                        this.setState({
+                          psummary: false,
+                          skuCompliance: true,
+                          skuComplianceJCAP: false,
+                          materialDisp: false,
+                          placeholderText:
+                            'Search by Destination & SKU Description',
+                          searchText: '',
+                          pageSize: 10,
+                        });
+                      }}
+                    >
+                      {this.state.skuCompliance && (
+                        <div className="headerViewCls" />
+                      )}
+                      <div className="headerTextCls">
+                        <p
+                          className={
+                            this.state.skuCompliance
+                              ? 'tabControl-title tabControl-activeText'
+                              : ' tabControl-title tabControl-inactiveText'
+                          }
+                        >
+                          SKU Compliance and Coverage - TSL
+                        </p>
+                        {this.state.skuCompliance && (
+                          <p
+                            className={
+                              this.state.skuCompliance
+                                ? 'tabControl-rowCount tabControl-activeText'
+                                : ' tabControl-rowCount tabControl-inactiveText'
+                            }
+                          >
+                            {this.state.criticalTableLength} <span> Rows</span>
+                            {/*this.state.currentView === 'order' ? resultsText + ' Rows' : ''*/}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    className="col-sm-3 productsummary-view-auto"
+                  >
+                    <div
+                      className={
+                        this.state.skuComplianceJCAP
+                          ? 'tabControl-outerViewClass active skuCompliance-tab '
+                          : ' tabControl-outerViewClass inActive skuCompliance-tab'
+                      }
+                      onClick={() => {
+                        this.setState({
+                          psummary: false,
+                          skuCompliance: false,
+                          skuComplianceJCAP: true,
+                          materialDisp: false,
+                          placeholderText:
+                            'Search by Destination',
+                          searchText: '',
+                          pageSize: 10,
+                        });
+                      }}
+                    >
+                      {this.state.skuComplianceJCAP && (
+                        <div className="headerViewCls" />
+                      )}
+                      <div className="headerTextCls">
+                        <p
+                          className={
+                            this.state.skuComplianceJCAP
+                              ? 'tabControl-title tabControl-activeText'
+                              : ' tabControl-title tabControl-inactiveText'
+                          }
+                        >
+                          SKU Compliance and Coverage - JCAPCPL
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    className="col-sm-3 productsummary-view-auto"
+                  >
+                    <div
+                      className={
+                        this.state.materialDisp
+                          ? 'tabControl-outerViewClass active materialDisp-tab'
+                          : ' tabControl-outerViewClass inActive materialDisp-tab'
+                      }
+                      onClick={() => {
+                        this.setState({
+                          materialDisp: true,
+                          psummary: false,
+                          skuCompliance: false,
+                          skuComplianceJCAP: false,
+                          placeholderText:
+                            'Search for Material Dispatched Table',
+                          searchText: '',
+                          pageSize: 10,
+                        });
+                      }}
+                    >
+                      {this.state.materialDisp && (
+                        <div className="headerViewCls" />
+                      )}
+                      <div className="headerTextCls">
+                        <p
+                          className={
+                            this.state.materialDisp
+                              ? 'tabControl-title tabControl-activeText'
+                              : ' tabControl-title tabControl-inactiveText'
+                          }
+                        >
+                          Materials Dispatched Details
+                        </p>
+                        {this.state.materialDisp && (
+                          <p
+                            className={
+                              this.state.materialDisp
+                                ? 'tabControl-rowCount tabControl-activeText'
+                                : ' tabControl-rowCount tabControl-inactiveText'
+                            }
+                          >
+                            {this.state.dispatchTableLength} <span> Rows</span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="col-sm-2">{this.getFilterBar()}</div>
+            </div>
+
+            {/* Tab end */}
+            <div className="dashboard-bottom hidden-print">
+              {this.state.psummary && (
+                <div className="dashboard-bottom-content">
+                  <ProductSummary
+                    fromDate={this.state.fromDtProp}
+                    toDate={this.state.toDtProp}
+                    tsllocation={this.state.tsllocation}
+                    searchText={this.state.searchText}
+                    shiptocode={this.state.shiptocode}
+                    getTableCount={this.getTableCount}
+                    isCustOpenRecent={this.state.isCustomizedOpen}
+                    handleCustomizedView={this.handleCustomizedView}
+                    closeCustomizeView={this.closeCustomizeView}
+                    handleSetTableLength={this.handleSetTableLength}
+                    pageSize={this.state.pageSize}
+                    productSummaryResponse={this.state.productSummaryResponse}
+                    isLoading={this.state.productSummaryLoading}
+                  />
+                </div>
+              )}
+              {this.state.skuCompliance && (
+                <div className="dashboard-bottom-content">
+                  <CriticalSkuDetails
+                    fromDate={this.state.fromDtProp}
+                    toDate={this.state.toDtProp}
+                    tsllocation={this.state.tsllocation}
+                    shiptocode={this.state.shiptocode}
+                    getTableCount={this.getTableCount}
+                    isCustOpenRecent={this.state.isCustomizedOpen}
+                    handleCustomizedView={this.handleCustomizedView}
+                    closeCustomizeView={this.closeCustomizeView}
+                    searchText={this.state.searchText}
+                    handleSetCriticalTableLength={
+                      this.handleSetCriticalTableLength
+                    }
+                    pageSize={this.state.pageSize}
+                    skuComplianceResponse1={this.state.skuComplianceResponse1}
+                    skuComplianceResponse2={this.state.skuComplianceResponse2}
+                    isLoading={this.state.skuComplianceLoading}
+                  />
+                </div>
+              )}
+              {this.state.skuComplianceJCAP && (
+                <div className="dashboard-bottom-content">
+                  <CriticalSkuDetailsJCAP
+                    // fromDate={this.state.fromDtProp}
+                    // toDate={this.state.toDtProp}
+                    getTableCount={this.getTableCount}
+                    isCustOpenRecent={this.state.isCustomizedOpen}
+                    handleCustomizedView={this.handleCustomizedView}
+                    closeCustomizeView={this.closeCustomizeView}
+                    searchText={this.state.searchText}
+                    // handleSetCriticalTableLengthJCAP={
+                    //   this.handleSetCriticalTableLengthJCAP
+                    // }
+                    pageSize={this.state.pageSize}
+                    // coilCode={this.state.selectedCoilCodeProp}
+                    skuComplianceResponseJCAP={this.state.skuComplianceResponseJCAP}
+                    // skuComplianceResponse2={this.state.skuComplianceResponse2}
+                    isLoading={this.state.skuComplianceLoading}
+                  />
+                </div>
+              )}
+              {this.state.materialDisp && (
+                <div className="dashboard-bottom-content">
+                  <RecentDispatches
+                    fromDate={this.state.fromDtProp}
+                    toDate={this.state.toDtProp}
+                    tsllocation={this.state.tsllocation}
+                    shiptocode={this.state.shiptocode}
+                    isCustOpenRecent={this.state.isCustomizedOpen}
+                    handleCustomizedView={this.handleCustomizedView}
+                    closeCustomizeView={this.closeCustomizeView}
+                    getTableCount={this.getTableCount}
+                    searchText={this.state.searchText}
+                    handleSetDispatchTableLength={
+                      this.handleSetDispatchTableLength
+                    }
+                    clearall={this.clearall}
+                    materialDispatchResponse={this.state.materialDispatchResponse}
+                    isLoading={this.state.materialDispatchLoading}
+                    showAllData={this.state.materialDispatchShowAllDataFlag}
+                    getAllData={this.getAllMeterialDispatchData}
+                    pages={this.state.pages}
+                    pageNo={this.state.pageNo}
+                    onPageNoChange={this.handlePageChange}
+                  />
+                </div>
+              )}
+
+            </div>
+            <div className="dashboard-bottom visible-print">
+              <div className="dashboard-bottom-content">
+                <ProductSummary
+                  fromDate={this.state.fromDtProp}
+                  toDate={this.state.toDtProp}
+                  tsllocation={this.state.tsllocation}
+                  searchText={this.state.searchText}
+                  shiptocode={this.state.shiptocode}
+                  getTableCount={this.getTableCount}
+                  isCustOpenRecent={this.state.isCustomizedOpen}
+                  handleCustomizedView={this.handleCustomizedView}
+                  closeCustomizeView={this.closeCustomizeView}
+                  handleSetTableLength={this.handleSetTableLength}
+                  productSummaryResponse={this.state.productSummaryResponse}
+                  isLoading={this.state.productSummaryLoading}
+                />
+              </div>
+              <div className="dashboard-bottom-content">
+                <CriticalSkuDetails
+                  fromDate={this.state.fromDtProp}
+                  toDate={this.state.toDtProp}
+                  tsllocation={this.state.tsllocation}
+                  shiptocode={this.state.shiptocode}
+                  getTableCount={this.getTableCount}
+                  isCustOpenRecent={this.state.isCustomizedOpen}
+                  handleCustomizedView={this.handleCustomizedView}
+                  closeCustomizeView={this.closeCustomizeView}
+                  searchText={this.state.searchText}
+                  handleSetCriticalTableLength={
+                    this.handleSetCriticalTableLength
+                  }
+                  pageSize={this.state.pageSize}
+                  // coilCode={this.state.selectedCoilCodeProp}
+                  skuComplianceResponse1={this.state.skuComplianceResponse1}
+                  skuComplianceResponse2={this.state.skuComplianceResponse2}
+                  isLoading={this.state.skuComplianceLoading}
+                />
+              </div>
+              <div className="dashboard-bottom-content">
+                <CriticalSkuDetailsJCAP
+                  // fromDate={this.state.fromDtProp}
+                  // toDate={this.state.toDtProp}
+                  // tsllocation={this.state.tsllocation}
+                  // shiptocode={this.state.shiptocode}
+                  getTableCount={this.getTableCount}
+                  isCustOpenRecent={this.state.isCustomizedOpen}
+                  handleCustomizedView={this.handleCustomizedView}
+                  closeCustomizeView={this.closeCustomizeView}
+                  searchText={this.state.searchText}
+                  // handleSetCriticalTableLengthJCAP={
+                  //   this.handleSetCriticalTableLengthJCAP
+                  // }
+                  pageSize={this.state.pageSize}
+                  // coilCode={this.state.selectedCoilCodeProp}
+                  skuComplianceResponseJCAP={this.state.skuComplianceResponseJCAP}
+                  // skuComplianceResponse2={this.state.skuComplianceResponse2}
+                  isLoading={this.state.skuComplianceLoading}
+                />
+              </div>
+              <div className="dashboard-bottom-content">
+                <RecentDispatches
+                  fromDate={this.state.fromDtProp}
+                  toDate={this.state.toDtProp}
+                  tsllocation={this.state.tsllocation}
+                  shiptocode={this.state.shiptocode}
+                  isCustOpenRecent={this.state.isCustomizedOpen}
+                  handleCustomizedView={this.handleCustomizedView}
+                  closeCustomizeView={this.closeCustomizeView}
+                  getTableCount={this.getTableCount}
+                  searchText={this.state.searchText}
+                  handleSetDispatchTableLength={
+                    this.handleSetDispatchTableLength
+                  }
+                  pageSize={this.state.pageSize}
+                  clearall={this.clearall}
+                  materialDispatchResponse={this.state.materialDispatchResponse}
+                  isLoading={this.state.materialDispatchLoading}
+                  showAllData={this.state.materialDispatchShowAllDataFlag}
+                  getAllData={this.getAllMeterialDispatchData}
+                />
+              </div>
+            </div>
+            {!this.state.materialDisp && <NumberOfRecords className="hidden-print" getPageSize={this.getPageSize} />}
+          </div>
+        </div>
+        {this.state.isNPSVisible && <NPS onClose={this.hideNPS} />}
+        {this.state.isGDPRVisible && (
+          <GDPR message={this.state.message} onClose={this.hideGDPR} />
+        )}
+      </div>
+    );
+  }
+}
+AutoDashboard.propTypes = {
+  auth: PropTypes.func.isRequired
+};
+function mapStateToProps(state) {
+  return {
+    auth: state.auth,
+  };
+}
+
+existing css:
+.critical-sku-container {
+  display: inline-block;
+  justify-content: center;
+  width: 100%;
+  //margin-top: 50px;
+  .section {
+    .section-header {
+      border-radius: 1px;
+      padding-left: 0%;
+      background: none;
+      .section-body {
+        .tbl-body-row {
+          background-color: rgba(54, 103, 175, 0.9);
+        }
+
+        .show-all-button {
+          .tbl-body-row {
+            background-color: rgba(227, 227, 227, 0.32);
+          }
+        }
+      }
+    }
+    .showAll {
+      height: 345px;
+      overflow-y: scroll;
+      margin-right: -16px;
+    }
+   .critical-sku-footnote  {
+      font-size: 11px;
+      margin-top: 5px;
+      font-style: italic;
+      color: #ffffff;
+    }
+  }
+  .delayed-row {
+    background-color: #ffffff;
+  }
+}
+
+//New CSS
+.outerViewCls {
+  background-color: white;
+}
+
+// .auto_critcalSKU_table {
+//   background-color: #ffffff;
+//   border-radius: 0px 10px 10px 10px !important;
+//   margin-left: 25px !important;
+//   margin-right: 30px !important;
+//   padding-top: 25px !important;
+//   padding-left: 25px !important;
+//   padding-right: 25px !important;
+//   padding-bottom: 25px !important;
+// }
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.auto_critcalSKU_table {
+  width: 100%;
+  border-radius: 10px;
+  margin: 0 auto;
+  padding: 25px;
+}
+
+@media screen and (max-width: 768px) {
+  .auto_critcalSKU_table {
+    padding: 10px;
+    font-size: 12px;
+  }
+}
+
+ 
+.auto_critcalSKU_table .rt-table {
+  border-right: 0.5px solid #0083a966;
+  overflow-x: hidden !important;
+}
+.ReactTable.auto_critcalSKU_table {
+  // .rt-thead .rt-resizable-header-content {
+  //   padding-left: 5px;
+
+  //   text-transform: uppercase;
+  // }
+  .rt-th.rt-resizable-header {
+    // padding-left: 10px;
+    // margin-left: 14px !important;
+    //margin-right: 40px !important;
+  }
+  .rt-td {
+    //.margin-left: 14px !important;
+    // padding-left: 0px !important;
+    // margin-right: 40px !important;
+    text-align: left;
+  }
+  .rt-tr {
+    font-size: 10px !important;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: normal;
+  }
+  .rt-td {
+    font-size: 11px !important;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: normal;
+  }
+}
+// .auto_critcalSKU_table .rt-tbody .rt-td:first-child {
+//   display: flex;
+//   margin-left: 19px;
+//   justify-content: space-between;
+//   // padding-left: 0px;
+// }
+// .ReactTable.auto_critcalSKU_table.rt-th.rt-resizable-header:first-child {
+//   padding-left: 14px !important;
+// }
+
+// .ReactTable.auto_critcalSKU_table .rt-tbody .rt-td:last-child {
+//   overflow: visible;
+//   white-space: normal;
+// }
+// .ReactTable.auto_critcalSKU_table .shipToPartyCls {
+//   overflow: visible;
+//   white-space: normal;
+// }
+.ReactTable.auto_critcalSKU_table .rt-thead .rt-th {
+  border: none;
+  margin: 0px !important;
+}
+.auto_critcalSKU_table.ReactTable .rt-tbody .rt-td {
+  border: none;
+  margin: 0px !important;
+  padding-left: 5px;
+}
+.auto_critcalSKU_table .rt-thead.-headerGroups .rt-tr {
+  color: black;
+  border: 1px solid #ffffff;
+  background-color: white;
+  // margin-left: -12px;
+}
+
+.auto_critcalSKU_table .rt-thead.-headerGroups .rt-tr .rt-th {
+  border: 1px solid #3d7edb;
+  //background-color: white;
+  // padding: 11px;
+  height: 36px;
+}
+.auto_critcalSKU_table .rt-thead.-headerGroups .rt-tr .rt-th:nth-child(2) {
+  border: 0px solid #ffffff;
+  width: 0px !important;
+  flex: 0 0 auto !important;
+  border-bottom: hidden;
+  padding: 5px;
+}
+
+//.auto_critcalSKU_table .rt-thead.-header .rt-tr .rt-th:nth-child(8){
+.blankHeaderCss {
+  flex: 0 0 auto !important;
+  width: 0px !important;
+  background-color: #ffffff;
+  border-top-style: hidden;
+  padding-top: 30px;
+}
+
+//.ReactTable.auto_critcalSKU_table .rt-td:nth-child(8){
+.blankCellCss {
+  flex: 0 0 auto !important;
+  width: 0px !important;
+  border-left: 1px solid #0083a966;
+  height: 50px;
+  border-right: 1px solid #0083a966;
+  border-bottom: 1px solid white;
+}
+// .auto_critcalSKU_table .rt-thead.-headerGroups .rt-tr .rt-th:first-child {
+//   padding-left: 5px;
+// }
+// .auto_critcalSKU_table .rt-tbody .rt-td:first-child {
+//   padding-left: 5px;
+// }
+
+// .auto_critcalSKU_table .rt-thead.-headerGroups .rt-tr .rt-th:first-child {
+//   padding-left: 5px;
+//   width: 843px !important;
+//   max-width: 870px !important;
+// }
+// .auto_critcalSKU_table .rt-thead.-headerGroups .rt-tr .rt-th:first-child {
+//   padding-left: 5px;
+//   width: 729px !important;
+//   max-width: 847px !important;
+// }
+// // .auto_critcalSKU_table .rt-thead.-headerGroups .rt-tr .rt-th:last-child {
+// //   width: 488px !important;
+// //   max-width: 488px !important;
+// // }
+// .auto_critcalSKU_table .rt-thead.-headerGroups .rt-tr .rt-th:last-child {
+//   width: 500px !important;
+//   max-width: 500px !important;
+// }
+
+// .auto_critcalSKU_table .rt-tbody .rt-td:first-child {
+//   padding-left: 5px;
+// }
+.ReactTable.auto_critcalSKU_table .rt-tbody .rt-tr-group {
+  border-bottom: none !important;
+}
+.auto_critcalSKU_table .rt-tbody .rt-tr {
+  height: 40px !important;
+  border-bottom: 1px solid #0083a966 !important;
+  background-color: #ffffff !important;
+  border-left: 1px solid #0083a966 !important;
+}
+
+//tbale_header
+// .ReactTable.auto_critcalSKU_table .rt-thead {
+//   .rt-th:nth-child(1),
+//   .rt-th:nth-child(9) {
+//     padding-left: 20px;
+//   }
+
+//   .rt-th:nth-child(2),
+//   .rt-th:nth-child(3),
+//   .rt-th:nth-child(4) {
+//     padding-left: 10px;
+//   }
+//   .rt-th:nth-child(13) {
+//     padding-left: 0px;
+//   }
+// }
+
+//Table_row
+// .ReactTable.auto_critcalSKU_table .rt-tbody {
+//   .rt-td:nth-child(1),
+//   .rt-td:nth-child() {
+//     padding-left: 12px;
+//   }
+//   .rt-td:nth-child(9) {
+//     padding-left: 25px;
+//   }
+//   .rt-td:nth-child(10) {
+//     padding-left: 10px;
+//   }
+//   .rt-td:nth-child(11) {
+//     padding-left: 15px;
+//   }
+//   .rt-td:nth-child(12) {
+//     padding-left: 15px;
+//   }
+//   .rt-td:nth-child(13) {
+//     padding-left: 15px;
+//   }
+//   // .rt-td:nth-child(11) {
+//   //   padding-left: 10px !important;
+//   // }
+//   // .rt-td:nth-child(9) {
+//   //   padding-left: 20px !important;
+//   // }
+//   // .rt-td:nth-child(10) {
+//   //   padding-left: 7px !important;
+//   // }
+//   // .rt-td:nth-child(11) {
+//   //   padding-left: 10px !important;
+//   // }
+// }
+
+//Table
+.compliance-coverage {
+  margin-left: 15px;
+  color: #002b45;
+  font-size: 12px;
+  font-family: sans-serif;
+  font-weight: 700;
+}
+
+@media only print {
+  // @page {
+  //   size: landscape;
+  // }
+  @page {
+    size: A4 landscape;
+  }
+  .ReactTable .rt-table {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+}
