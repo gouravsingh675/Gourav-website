@@ -1,0 +1,130 @@
+PATH: application\src\main\java\com\tata\tsl\platform\exportorder\controller\MOUController.java
+
+package com.tata.tsl.platform.exportorder.controller;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import com.tata.tsl.platform.exportorder.dto.SaveMOURequestBody;
+import com.tata.tsl.platform.exportorder.model.MOUDbModel;
+import com.tata.tsl.platform.exportorder.service.MOUService;
+
+import javax.validation.Valid;
+ 
+@RestController
+@RequestMapping("/mou")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
+public class MOUController {
+ 
+    @Autowired
+    private MOUService mouService;
+ 
+ 
+    // POST API to save MOU
+    @PostMapping("/save")
+    public ResponseEntity<MOUDbModel> saveMOU(@Valid @RequestBody SaveMOURequestBody saveFYRequestBody) {
+        MOUDbModel savedMou = mouService.saveMOU(saveFYRequestBody);
+        return ResponseEntity.ok(savedMou);
+    }
+}
+ 
+
+PATH: application\src\main\java\com\tata\tsl\platform\exportorder\dto\SaveMOURequestBody.java
+
+package com.tata.tsl.platform.exportorder.dto;
+ 
+import lombok.Getter;
+import lombok.Setter;
+ 
+import javax.validation.constraints.NotBlank;
+
+import org.springframework.data.annotation.Id;
+ 
+@Getter
+@Setter
+public class SaveMOURequestBody {
+    @Id
+    @NotBlank(message = "Customer Code cannot be blank")
+    private String customerCode;
+ 
+    @NotBlank(message = "MOU Quantity cannot be blank")
+    private String mouQuantity;
+ 
+    @NotBlank(message = "Attachment cannot be blank")
+    private String attachment;
+ 
+    @NotBlank(message = "Created By cannot be blank")
+    private String createdBy;
+ 
+    @NotBlank(message = "Updated By cannot be blank")
+    private String updatedBy;
+}
+
+PATH: application\src\main\java\com\tata\tsl\platform\exportorder\model\MOUDbModel.java
+package com.tata.tsl.platform.exportorder.model;
+ 
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.tata.tsl.platform.exportorder.dto.SaveMOURequestBody;
+ 
+@Getter
+@Setter
+@Document(collection = "fy")  // This creates the 'fy' collection
+public class MOUDbModel extends SaveMOURequestBody {
+ 
+    private String customerCode;
+    private String mouQuantity;
+    private String attachment;
+    private String createdBy;
+    private String updatedBy;
+
+    public MOUDbModel(){
+    }
+
+    // Constructor for easier object creation
+    public MOUDbModel(String customerCode, String mouQuantity, String attachment, String createdBy, String updatedBy) {
+        this.customerCode = customerCode;
+        this.mouQuantity = mouQuantity;
+        this.attachment = attachment;
+        this.createdBy = createdBy;
+        this.updatedBy = updatedBy;
+    }
+ 
+}
+ 
+PATH: application\src\main\java\com\tata\tsl\platform\exportorder\service\MOUService.java
+package com.tata.tsl.platform.exportorder.service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.tata.tsl.platform.exportorder.model.MOUDbModel;
+import com.tata.tsl.platform.exportorder.dto.SaveMOURequestBody;
+import com.tata.tsl.platform.exportorder.repository.MOURepository;
+@Service
+public class MOUService {
+ 
+    @Autowired
+    private MOURepository mouRepository;
+ 
+    public MOUDbModel saveMOU(SaveMOURequestBody saveMOURequestBody) {
+        MOUDbModel mouDBModel = new MOUDbModel(
+            saveMOURequestBody.getCustomerCode(),
+            saveMOURequestBody.getMouQuantity(),
+            saveMOURequestBody.getAttachment(),
+            saveMOURequestBody.getCreatedBy(),
+            saveMOURequestBody.getUpdatedBy()
+        );
+        return mouRepository.save(mouDBModel);
+    }
+}
+ 
+PATH: application\src\main\java\com\tata\tsl\platform\exportorder\repository\MOURepository.java
+package com.tata.tsl.platform.exportorder.repository;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import com.tata.tsl.platform.exportorder.model.MOUDbModel;
+public interface MOURepository extends MongoRepository<MOUDbModel, String> {
+    // You can add custom queries here if necessary
+}
+ 
+
