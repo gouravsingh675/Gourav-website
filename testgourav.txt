@@ -1,0 +1,397 @@
+/* eslint-disable jsx-a11y/label-has-for */
+import React, { useState, useRef, useEffect } from 'react';
+import Select from 'react-select';
+import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
+import './MouForm.scss';
+import SCVWebAPI from '../../../framework/api';
+
+const MouForm = ({ onClose, auth }) => {
+  const [selectedYear, setSelectedYear] = useState(null);
+  const [customerCode, setCustomerCode] = useState('');
+  const [mouQuantity, setMouQuantity] = useState('');
+  const [attachment, setAttachment] = useState(null);
+  const fileInputRef = useRef(null);
+  const [yearOptions, setYearOptions] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [custCodeOptions, setCustCodeOptions] = useState([]);// Customer code options
+  const [custCodeLoading, setCustCodeLoading] = useState(false);// Loading state for customer codes
+  const [fileTypeError, setFileTypeError] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
+
+  // New state variables for the custom popup
+  const [popup, setPopup] = useState({
+    show: false,
+    message: '',
+    type: 'success', // or 'error', 'warning', etc.  You can style based on type
+  });
+
+  useEffect(() => {
+    const currentYear = new Date().getFullYear();
+    const startYear = currentYear - 4;
+    const endYear = currentYear + 2;
+    const options = [];
+
+    for (let i = startYear; i <= endYear; i += 1) {
+      const year = i;
+      // eslint-disable-next-line no-use-before-define
+      const formattedYear = formatFinancialYear(year); // Format the year
+      options.push({
+        value: formattedYear, // Use the formatted year as the value
+        label: formattedYear, // Use the formatted year as the label
+      });
+    }
+    setYearOptions(options);
+    // Fetch customer codes when the component mounts
+    // eslint-disable-next-line no-use-before-define
+    getCustCode();
+  }, []);
+
+  const getCustCode = async () => {
+    setCustCodeLoading(true);
+    try {
+      const ccOptions = [];
+      const url = '/BillTo/GetBillTo';
+      const postBody = {
+        PAN: auth.userInfo.type === 'PAN' ? auth.userInfo.code : '',
+        custID: auth.userInfo.type === 'CUSTOMER_CODE' ? auth.userInfo.custCodeAccess : '',
+      };
+
+      const response = await SCVWebAPI.post(url, null, null, postBody);
+      const uniqueCheckArray = [];
+
+      for (let i = 0; i < response.length; i += 1) {
+        if(!uniqueCheckArray.includes(response[i].CustCode)) {
+          ccOptions.push({
+            value: response[i].CustCode,
+            label: `${response[i].CustCode} - ${response[i].Name} - ${response[i].City}`,
+          });
+          uniqueCheckArray.push(response[i].CustCode);
+        }
+      }
+      setCustCodeOptions(ccOptions);
+    } catch (error) {
+      //   console.error('Error fetching customer codes:', error);
+      // alert('Failed to fetch customer codes.');
+      // Show error popup instead of alert
+      setPopup({ show: true, message: 'Failed to fetch customer codes.', type: 'error' });
+    } finally {
+      setCustCodeLoading(false);
+    }
+  };
+
+
+  const formatFinancialYear = (year) => {
+    const nextYear = year + 1;
+    const nextYearShort = nextYear.toString().slice(-2);
+    return `${year}-${nextYearShort}`;
+  };
+
+  const handleYearChange = (selectedOption) => {
+    setSelectedYear(selectedOption);
+  };
+
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    const allowedTypes = ['application/pdf', 'image/jpeg',
+      'image/jpg', 'image/png'
+    ];
+    if(file && allowedTypes.includes(file.type)) {
+      setAttachment(file);
+      setFileTypeError(false);
+    } else {
+      setAttachment(null);
+      setFileTypeError(true);
+    }
+  };
+
+
+  const validateForm = () => {
+    const errors = {};
+    let isValid = true;
+
+    if(!selectedYear) {
+      errors.selectedYear = 'Financial Year is required';
+      isValid = false;
+    }
+
+    if(!customerCode || customerCode.length === 0) {
+      errors.customerCode = 'Customer Code is required';
+      isValid = false;
+    }
+
+    if(!mouQuantity) {
+      errors.mouQuantity = 'MOU Quantity is required';
+      isValid = false;
+    }
+
+    if(!attachment) {
+      errors.attachment = 'Attachment is required';
+      isValid = false;
+    }
+
+    setFormErrors(errors);
+    return isValid;
+  };
+  const handleButtonClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const uploadFile = async (document) => {
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', document);
+      const response = await SCVWebAPI.dbPost('/attachments/upload', {}, {}, formData);
+      return response.fileId; // Return fileId for the next API call
+    } catch (error) {
+      // alert('File upload failed!');
+      setPopup({ show: true, message: 'File upload failed!', type: 'error' });
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const submitFormData = async (attachmentId) => {
+    setIsLoading(true);
+    // Ensure customerCode is an array before mapping
+    const customerCodeValues = Array.isArray(customerCode)
+      ? customerCode.map((option) => { return option.value; })
+      : [];
+    try {
+      //const customerCodeValues = customerCode ? customerCode.map((option) => { return option.value; }) : [];
+      const body = {
+        attachment: attachmentId,
+        createdBy: auth.userInfo.name,
+        customerCodes: customerCodeValues,
+        fyDate: selectedYear && selectedYear.value ? selectedYear.value : '',
+        mouQuantity,
+        updatedBy: auth.userInfo.name,
+      };
+
+      await SCVWebAPI.dbPost('/exportorder/mou/save', {}, {}, body);
+      //   console.log('Form data submitted successfully', response);
+      // alert('Form submitted successfully!');
+      // setPopup({ show: true, message: 'Form submitted successfully!', type: 'success' });
+      //   onClose();
+      //onClose();
+      //window.location.reload();
+      setPopup({ show: true, message: 'Form submitted successfully!', type: 'success' });
+      //   onClose();
+      setTimeout(() => {
+        onClose();
+        window.location.reload();
+      }, 2000);
+    } catch (error) {
+      //   console.error('Form submission failed', error);
+      // alert('Form submission failed!');
+      setPopup({ show: true, message: 'Form submission failed!', type: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const isValid = validateForm();
+    if(!attachment) {
+      // alert('Form submission failed!');
+      console.log('attachment is missing');
+      setPopup({ show: true, message: 'Please select a file to upload.', type: 'warning' });
+      return;
+    }
+    if(!isValid || fileTypeError) {
+      if(fileTypeError) {
+        setPopup({ show: true, message: 'Invalid file type.', type: 'warning' });
+      } else {
+        setPopup({ show: true, message: 'Please select all fields', type: 'warning' });
+      }
+      return;
+    }
+
+    // Step 1: Upload the file and get the fileId
+    const uploadedFileId = await uploadFile(attachment);
+
+    if(uploadedFileId) {
+      // Step 2: If file upload is successful, submit the form data
+      //await submitFormData(uploadedFileId);\\\
+      const submissionResult = await submitFormData(uploadedFileId);
+      if(submissionResult) {
+        onClose(); // Only close if submission was successful
+      }
+    }
+  };
+  const customStyles = {
+    control: (provided, state) => {
+      return {
+        ...provided,
+        borderRadius: '4px',
+        border: '1px solid #ddd',
+        fontSize: '16px',
+        color: '#333',
+        padding: '8px',
+        boxShadow: state.isFocused ? '0 0 0 1px #2684ff' : null,
+        '&:hover': {
+          borderColor: state.isFocused ? '#2684ff' : '#aaa',
+        },
+      };
+    },
+    option: (provided, state) => {
+      return {
+        ...provided,
+        fontSize: '16px',
+        color: '#333',
+        backgroundColor: state.isFocused ? 'f0f0f0' : null,
+        '&:hover': {
+          backgroundColor: '#e0e0e0',
+        },
+      };
+    },
+    menu: (provided) => {
+      return {
+        ...provided,
+        borderRadius: '4px',
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+        overflow: 'auto',
+        maxHeight: '200px', // Adjust as needed
+      };
+    },
+    singleValue: (provided) => {
+      return {
+        ...provided,
+        fontSize: '16px',
+        color: '#333',
+      };
+    },
+  };
+
+
+  return (
+    <div className="mouFormOverlay">
+      <div className="overlay">
+        <div className="popup">
+          <button onClick={onClose} className="closeButton">
+            ×
+          </button>
+          <h3>Enter MOU Details</h3>
+
+          {/* Custom Popup Component */}
+          {popup.show && (
+          <div className={`custom-alert-popup ${popup.type}`}>
+            <p>{popup.message}</p>
+            <button onClick={() => { return setPopup({ ...popup, show: false }); }}>OK</button>
+          </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="mouForm">
+            <div className="formGroup">
+              <label htmlFor="financialYear">Select Financial Year</label>
+              <span className="required-asterisk">*</span>
+              <Select
+                id="financialYear"
+                options={yearOptions}
+                value={selectedYear}
+                onChange={handleYearChange}
+                styles={customStyles}
+                placeholder="Financial Year"
+              />
+              {formErrors.selectedYear && (
+                <p className="errorText">{formErrors.selectedYear}</p>
+              )}
+            </div>
+            <div className="formGroup">
+              <label htmlFor="customerCode">Select Customer Codes</label>
+              <span className="required-asterisk">*</span>
+              <Select
+                id="customerCode"
+                options={custCodeOptions}
+                value={customerCode}
+                isMulti
+                onChange={(selectedOptions) => { return setCustomerCode(selectedOptions || []); }} // Handle multi-select
+                isLoading={custCodeLoading}
+                styles={customStyles}
+                placeholder="Select Customer"
+              />
+              {custCodeLoading && <p>Loading customer codes...</p>}
+              {formErrors.customerCode && (
+                <p className="errorText">{formErrors.customerCode}</p>
+              )}
+            </div>
+
+            <div className="formGroup">
+              <label htmlFor="mouQuantity">MOU Quantity</label>
+              <span className="required-asterisk">*</span>
+              <input
+                type="number"
+                id="mouQuantity"
+                value={mouQuantity}
+                onChange={(e) => { return setMouQuantity(e.target.value); }}
+                placeholder="Enter MOU quantity in Tonnes"
+                required
+              />
+              {formErrors.mouQuantity && (
+                <p className="errorText">{formErrors.mouQuantity}</p>
+              )}
+            </div>
+
+            <div className="formGroup">
+              <label htmlFor="attachment">Add Attachment</label>
+              <span className="required-asterisk">*</span>
+              <button type="button" onClick={handleButtonClick} className="chooseFileButton">
+                Choose File
+              </button>
+              <input
+                type="file"
+                id="attachment"
+                style={{ display: 'none' }}
+                onChange={handleFileChange}
+                ref={fileInputRef}
+                disabled={isLoading}
+                required
+              />
+              {attachment && <p className="fileName">Selected file: {attachment.name}</p>}
+              {formErrors.attachment && (
+                <p className="errorText">{formErrors.attachment}</p>
+              )}
+            </div>
+            {fileTypeError && (
+              <p className="errorText">
+                Only PDF, JPG, JPEG, and PNG files are allowed.
+              </p>
+            )}
+
+            <button type="submit" className="submitButton" disabled={isLoading}>
+              {isLoading ? 'Submitting...' : 'Submit'}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+MouForm.propTypes = {
+  onClose: PropTypes.func.isRequired,
+  auth: PropTypes.shape({
+    userInfo: PropTypes.shape({
+      custCodeAccess: PropTypes.string,
+      type: PropTypes.string,
+      buisnessType: PropTypes.string,
+      role: PropTypes.string,
+    }).isRequired,
+  }).isRequired,
+
+};
+
+const mapStateToProps = (state) => {
+  return {
+    auth: state.auth,
+  };
+};
+
+
+export default connect(mapStateToProps)(MouForm);
