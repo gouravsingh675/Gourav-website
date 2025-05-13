@@ -1,0 +1,183 @@
+Give me updated code , request year is input that take start date as starting year of that month and end date of the year as end, and vertical types can be multiple selected. Code is giving not exact data count count. Can you identify issue.
+
+Query is correctly working:
+db.Scv_users_login.aggregate([
+  {
+    $match: {
+      loggedInTimeStamp: {
+        $gte: ISODate('2025-01-01T00:00:00.000Z'),
+        $lte: new Date('2025-12-31T00:00:00.000Z'),
+      },
+    },
+  },
+  {
+    $lookup: {
+      from: 'Scv_users',
+      localField: 'userId',
+      foreignField: '_id',
+      as: 'user_details',
+    },
+  },
+  {
+    $unwind: '$user_details',
+  },
+  {
+    $match: {
+      'user_details.verticalType': { $in: ['IPP FP', 'AUTO'] }, // Specify multiple vertical types in the array
+    },
+  },
+  {
+    $group: {
+      _id: {
+        monthYear: {
+          $dateToString: {
+            format: '%Y-%m',
+            date: '$loggedInTimeStamp',
+          },
+        },
+        userId: '$user_details.code',
+        verticalType: '$user_details.verticalType',
+        role: '$user_details.role',
+      },
+      users: {
+        $addToSet: '$user_details.code',
+      },
+    },
+  },
+  {
+    $group: {
+      _id: {
+        monthYear: '$_id.monthYear',
+        verticalType: '$_id.verticalType',
+        role: '$_id.role',
+      },
+      activeUserCount: {
+        $sum: { $const: 1 },
+      },
+    },
+  },
+  {
+    $project: {
+      _id: 0,
+      monthYear: '$_id.monthYear',
+      verticalType: '$_id.verticalType',
+      role: '$_id.role',
+      activeUserCount: 1,
+    },
+  },
+  {
+    $sort: {
+      monthYear: 1,
+      verticalType: 1,
+      role: 1,
+    },
+  },
+]);
+
+Code:
+package com.tata.tsl.platform.user.service;
+
+import com.tata.tsl.platform.user.dto.FetchUniqueActiveUsersResponse;
+import com.tata.tsl.platform.user.model.ScvUserLogin;
+import com.tata.tsl.platform.user.requestBody.FetchUniqueactiveuserRequestBody;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.GroupOperation;
+import org.springframework.data.mongodb.core.aggregation.LookupOperation;
+import org.springframework.data.mongodb.core.aggregation.MatchOperation;
+import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
+import org.springframework.data.mongodb.core.aggregation.SortOperation;
+import org.springframework.data.mongodb.core.aggregation.UnwindOperation;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.stereotype.Service;
+import org.springframework.data.mongodb.core.aggregation.DateOperators;
+import org.springframework.data.mongodb.core.aggregation.ConditionalOperators;
+
+import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.List;
+
+@Service
+public class FetchUniqueactiveuserService {
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+    public List<FetchUniqueActiveUsersResponse> fetchUniqueActiveUsers(
+        FetchUniqueactiveuserRequestBody requestBody) {
+
+        int requestYear = requestBody.getYear();
+        List<String> verticalTypes = requestBody.getVerticalTypes();
+
+        LocalDateTime startOfYear = LocalDateTime.of(requestYear, 1, 1, 0, 0);
+        Instant instant = startOfYear.atZone(ZoneId.of("UTC")).toInstant();
+        Date startDate = Date.from(instant);
+        
+        LocalDateTime endOfYear = LocalDateTime.of(requestYear + 1, 1, 1, 0, 0).minusSeconds(1);
+        Instant instantEnd = endOfYear.atZone(ZoneId.of("UTC")).toInstant();
+        Date endDate = Date.from(instantEnd);
+
+        MatchOperation matchOperation =
+            Aggregation.match(Criteria.where("loggedInTimeStamp").gte(startDate).lte(endDate));
+
+        LookupOperation lookupOperation =
+            Aggregation.lookup("Scv_users", "userId", "_id", "userDetails");
+
+        UnwindOperation unwindOperation = Aggregation.unwind("$userDetails");
+       // Use $ifNull to handle missing verticalType
+        ProjectionOperation projectDateToString = Aggregation.project()
+            .and(DateOperators.DateToString.dateOf("loggedInTimeStamp")
+                .toString("%Y-%m")
+                .withTimezone(DateOperators.Timezone.valueOf("UTC")))
+            .as("monthYear")
+            .and("userDetails.code").as("code")
+            .and(ConditionalOperators.ifNull("userDetails.verticalType").then(null)).as("verticalType")
+            .and("userDetails.role").as("role");
+
+        // Filter out documents where 'code' is null
+        MatchOperation matchCodeNotNull = 
+            Aggregation.match(Criteria.where("code").ne(null));
+
+
+        // Match any of the vertical types in the list
+        MatchOperation matchVerticalTypes =
+            Aggregation.match(Criteria.where("verticalType").in(verticalTypes));
+
+        GroupOperation groupOperation1 = Aggregation.group("monthYear", "verticalType", "role")
+            .addToSet("code").as("uniqueCodes");
+
+        GroupOperation groupOperation2 =
+            Aggregation.group("monthYear", "verticalType", "role")
+                .count().as("activeCodeCount");
+
+        ProjectionOperation projectOperation =
+            Aggregation.project("monthYear", "verticalType", "role", "activeCodeCount")
+                .andExclude("_id");
+
+        SortOperation sortOperation =
+            Aggregation.sort(Sort.Direction.ASC, "monthYear", "verticalType", "role");
+
+        Aggregation aggregation =
+            Aggregation.newAggregation(
+                matchOperation,
+                lookupOperation,
+                unwindOperation,
+                projectDateToString,
+                matchCodeNotNull,
+                matchVerticalTypes,
+                groupOperation1,
+                groupOperation2,
+                projectOperation,
+                sortOperation);
+
+        AggregationResults<FetchUniqueActiveUsersResponse> results =
+            mongoTemplate.aggregate(
+                aggregation, ScvUserLogin.class, FetchUniqueActiveUsersResponse.class);
+        return results.getMappedResults();
+    }
+}
