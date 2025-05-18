@@ -101,32 +101,186 @@ output:
 }
 
 But when i run this code 
-
-package com.tata.tsl.platform.user.controller;
+package com.tata.tsl.platform.user.service;
 
 import com.tata.tsl.platform.user.dto.LoginMetricsmonthlyDTO;
-import com.tata.tsl.platform.user.service.FetchUniqueactiveusermonthlyService;
+import com.tata.tsl.platform.user.repository.LoginMetricsMonthlyRepository;
+import com.tata.tsl.platform.user.model.ScvUserLogin;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationExpression;
+import org.springframework.data.mongodb.core.aggregation.AggregationOperationContext;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.GroupOperation;
+import org.springframework.data.mongodb.core.aggregation.LookupOperation;
+import org.springframework.data.mongodb.core.aggregation.MatchOperation;
+import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
+import org.springframework.data.mongodb.core.aggregation.UnwindOperation;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tata.tsl.platform.common.logging.TSLLogger;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import org.bson.Document;
 
-@RestController
-@CrossOrigin(origins = "*")
-@RequestMapping("/login-metrics-monthly")
-public class LoginMetricsMonthlyController {
+@Service("FetchUniqueactiveusermonthlyService")
+public class FetchUniqueactiveusermonthlyServiceImpl implements FetchUniqueactiveusermonthlyService {
 
     @Autowired
-    private FetchUniqueactiveusermonthlyService fetchUniqueactiveusermonthlyService;
+    private MongoTemplate mongoTemplate;
 
-    @GetMapping
-    public List<LoginMetricsmonthlyDTO> getLoginMetricsMonthly() {
-        return fetchUniqueactiveusermonthlyService.fetchUniqueActiveUsersMonthly();
+    @Autowired
+    private LoginMetricsMonthlyRepository loginMetricsMonthlyRepository;
+
+    private TSLLogger logger = new TSLLogger(this.getClass());
+
+    @Override
+    public List<LoginMetricsmonthlyDTO> fetchUniqueActiveUsersMonthly() {
+         logger.info("Started executing service login-metrics-monthly");
+        // 1. Get the current month and year
+        YearMonth currentYearMonth = YearMonth.now();
+        LocalDate firstDayOfMonth = currentYearMonth.atDay(1);
+        LocalDate lastDayOfMonth = currentYearMonth.atEndOfMonth();
+
+        // 2. Convert LocalDate to Date for MongoDB compatibility
+        Date startDate = Date.from(firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(lastDayOfMonth.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+
+        // 3. Match documents within the current month
+        MatchOperation matchOperation = Aggregation.match(Criteria.where("loggedInTimeStamp").gte(startDate).lte(endDate));
+
+        // 4. Lookup user details from Scv_users collection
+        LookupOperation lookupOperation = Aggregation.lookup("Scv_users", "userId", "_id", "userDetails");
+
+        // 5. Unwind user details, handling missing userDetails
+        UnwindOperation unwindOperation = Aggregation.unwind("$userDetails");
+
+        // 6. Group by userId to count unique users and get their role
+        GroupOperation groupByUserId = Aggregation.group("userId")
+                .first("userDetails.role").as("role");
+
+        // 7. Group by role and count unique users for each role
+        GroupOperation groupByRole = Aggregation.group("role")
+                .count().as("totalLoginCount");
+
+        // 8. Project to prepare for final transformation
+        ProjectionOperation projectIntermediate = Aggregation.project()
+                .andExclude("_id")
+                .and("role").as("role")
+                .and("totalLoginCount").as("loginCount")
+                .and(new NullField()).as("metric") // Add metric field
+                .and(new NullField()).as("date")   // Add date field
+                .and(new NullField()).as("system") // Add system field
+                .and(new NullField()).as("granularity"); // Add granularity field
+
+        // 9. Create the aggregation pipeline
+        Aggregation aggregation = Aggregation.newAggregation(
+                matchOperation,
+                lookupOperation,
+                unwindOperation,
+                groupByUserId,
+                groupByRole,
+                projectIntermediate
+        );
+
+        // 10. Execute the aggregation
+        AggregationResults<LoginMetricsmonthlyDTO> results = mongoTemplate.aggregate(
+                aggregation, ScvUserLogin.class, LoginMetricsmonthlyDTO.class
+        );
+
+        // 11. Get the aggregation results
+        List<LoginMetricsmonthlyDTO> metricsList = results.getMappedResults();
+        // Convert metricsList to JSON string
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            String metricsListJson = mapper.writeValueAsString(metricsList);
+            logger.info( "output metrics list is" + metricsListJson);
+        } catch (Exception e) {
+            logger.error("Error converting metricsList to JSON", e);
+        }
+        // 12. Java for loop to create final list and format the data
+        List<LoginMetricsmonthlyDTO> finalMetricsList = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyyyy");
+        String firstDayOfMonthStr = firstDayOfMonth.format(formatter);
+
+        for (LoginMetricsmonthlyDTO metrics : metricsList) {
+            // String roleCode = null;
+            // switch (metrics.getRole()) {
+            //     case "Customer":
+            //         roleCode = "CA";
+            //         break;
+            //     case "SM":
+            //         roleCode = "SA";
+            //         break;
+            //     case "Internal":
+            //         roleCode = "IA";
+            //         break;
+            //     case "Unknown":
+            //         roleCode = "UA";
+            //         break;
+            //     default:
+            //         roleCode = "UA";
+            //         break;
+            // }
+            String roleCode = "UA"; // Default role code
+            String role = metrics.getRole(); // Get the role
+
+            if (role != null) {
+                switch (role) {
+                    case "Customer":
+                        roleCode = "CA";
+                        break;
+                    case "SM":
+                        roleCode = "SA";
+                        break;
+                    case "Internal":
+                        roleCode = "IA";
+                        break;
+                    case "Unknown":
+                        roleCode = "UA";
+                        break;
+                }
+            } else {
+                // Use the logger to log a warning message
+                logger.info("Role is null or missing for a user. Using default role \'Unknown\'.");
+            }
+
+            LoginMetricsmonthlyDTO finalMetrics = new LoginMetricsmonthlyDTO();
+            finalMetrics.set_id("MLC" + roleCode + firstDayOfMonthStr);
+            finalMetrics.setMetric("login");
+            finalMetrics.setDate(firstDayOfMonthStr);
+            finalMetrics.setRole(metrics.getRole());
+            finalMetrics.setLoginCount(metrics.getLoginCount());
+            finalMetrics.setSystem("Compass");
+            finalMetrics.setGranularity("Monthly");
+
+            finalMetricsList.add(finalMetrics);
+        }
+
+        // 13. Save only if there are results to avoid overwriting existing data with empty data
+        if (!finalMetricsList.isEmpty()) {
+            loginMetricsMonthlyRepository.saveAll(finalMetricsList);
+        }
+        return finalMetricsList;
+    }
+
+    // Helper class to represent a null field in aggregation
+    static class NullField implements AggregationExpression {
+        @Override
+        public Document toDocument(AggregationOperationContext context) {
+            return new Document("$literal", null);
+        }
     }
 }
+
 
 output is:
 [
