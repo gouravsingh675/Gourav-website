@@ -1,0 +1,160 @@
+db.Scv_users_login.aggregate([
+  {
+    $match: {
+      loggedInTimeStamp: {
+        $gte: ISODate("2025-05-01T00:00:00.000Z"), //Dynamic value based on current month
+        $lte: ISODate("2025-05-31T23:59:59.000Z")  //Dynamic value based on current month
+      }
+    }
+  },
+  {
+    $lookup: {
+      from: "Scv_users",
+      let: { user_id: "$userId" },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $eq: ["$_id", "$$user_id"]
+            }
+          }
+        },
+        {
+          $project: {
+            role: 1,
+            _id: 0
+          }
+        }
+      ],
+      as: "userDetails"
+    }
+  },
+  {
+    $unwind: {
+      path: "$userDetails",
+      preserveNullAndEmptyArrays: true
+    }
+  },
+  {
+    $project: {
+      userId: 1,
+      role: { $ifNull: ["$userDetails.role", "Unknown"] }
+    }
+  },
+  {
+    $group: {
+      _id: "$userId",
+      role: { $first: "$role" }
+    }
+  },
+  {
+    $group: {
+      _id: "$role",
+      totalLoginCount: { $sum: 1 }
+    }
+  },
+  {
+    $project: {
+      _id: 0,
+      role: "$_id",
+      loginCount: "$totalLoginCount",
+      metric: null,
+      date: null,
+      system: null,
+      granularity: null
+    }
+  }
+])
+
+output:
+{
+  role: 'Unknown',
+  loginCount: 1,
+  metric: null,
+  date: null,
+  system: null,
+  granularity: null
+}
+{
+  role: 'SM',
+  loginCount: 9,
+  metric: null,
+  date: null,
+  system: null,
+  granularity: null
+}
+{
+  role: 'Customer',
+  loginCount: 13,
+  metric: null,
+  date: null,
+  system: null,
+  granularity: null
+}
+{
+  role: 'Internal',
+  loginCount: 1,
+  metric: null,
+  date: null,
+  system: null,
+  granularity: null
+}
+
+But when i run this code 
+
+package com.tata.tsl.platform.user.controller;
+
+import com.tata.tsl.platform.user.dto.LoginMetricsmonthlyDTO;
+import com.tata.tsl.platform.user.service.FetchUniqueactiveusermonthlyService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@CrossOrigin(origins = "*")
+@RequestMapping("/login-metrics-monthly")
+public class LoginMetricsMonthlyController {
+
+    @Autowired
+    private FetchUniqueactiveusermonthlyService fetchUniqueactiveusermonthlyService;
+
+    @GetMapping
+    public List<LoginMetricsmonthlyDTO> getLoginMetricsMonthly() {
+        return fetchUniqueactiveusermonthlyService.fetchUniqueActiveUsersMonthly();
+    }
+}
+
+output is:
+[
+    {
+        "_id": "MLCUA01052025",
+        "metric": "login",
+        "date": "01052025",
+        "role": null,
+        "loginCount": 13,
+        "system": "Compass",
+        "granularity": "Monthly"
+    },
+    {
+        "_id": "MLCUA01052025",
+        "metric": "login",
+        "date": "01052025",
+        "role": null,
+        "loginCount": 1,
+        "system": "Compass",
+        "granularity": "Monthly"
+    },
+    {
+        "_id": "MLCUA01052025",
+        "metric": "login",
+        "date": "01052025",
+        "role": null,
+        "loginCount": 9,
+        "system": "Compass",
+        "granularity": "Monthly"
+    }
+]
