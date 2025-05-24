@@ -1,213 +1,106 @@
 import React, { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
-import { DocumentIcon } from '@heroicons/react/24/outline';
-import {
-    Card,
-    CardHeader,
-    CardBody,
-    Divider,
-} from "@heroui/react"; // Or your preferred UI library
 
 const mouData = [
-    {
-        fy: "2023-24",
-        company: "Company A",
-        mouQuantity: "1000 MT",
-        accruedQuantity: "300 MT",
-        requiredRunRate: "83 MT/Month",
-        achieved: "On Track",
-        document: "documentA.pdf",
-    },
-    {
-        fy: "2023-24",
-        company: "Company B",
-        mouQuantity: "800 MT",
-        accruedQuantity: "250 MT",
-        requiredRunRate: "67 MT/Month",
-        achieved: "Behind Schedule",
-        document: "documentB.pdf",
-    },
-    {
-        fy: "2023-24",
-        company: "Company C",
-        mouQuantity: "1200 MT",
-        accruedQuantity: "700 MT",
-        requiredRunRate: "100 MT/Month",
-        achieved: "Ahead of Schedule",
-        document: "documentC.pdf",
-    },
-    {
-        fy: "2023-24",
-        company: "Company D",
-        mouQuantity: "600 MT",
-        accruedQuantity: "450 MT",
-        requiredRunRate: "50 MT/Month",
-        achieved: "On Track",
-        document: "documentD.pdf",
-    },
-    {
-        fy: "2023-24",
-        company: "Company E",
-        mouQuantity: "1500 MT",
-        accruedQuantity: "900 MT",
-        requiredRunRate: "125 MT/Month",
-        achieved: "On Track",
-        document: "documentE.pdf",
-    },
-    {
-        fy: "2023-24",
-        company: "Company F",
-        mouQuantity: "700 MT",
-        accruedQuantity: "300 MT",
-        requiredRunRate: "58 MT/Month",
-        achieved: "Behind Schedule",
-        document: "documentF.pdf",
-    },
-    {
-        fy: "2023-24",
-        company: "Company G",
-        mouQuantity: "900 MT",
-        accruedQuantity: "700 MT",
-        requiredRunRate: "75 MT/Month",
-        achieved: "Ahead of Schedule",
-        document: "documentG.pdf",
-    },
-    {
-        fy: "2023-24",
-        company: "Company H",
-        mouQuantity: "1000 MT",
-        accruedQuantity: "800 MT",
-        requiredRunRate: "83 MT/Month",
-        achieved: "On Track",
-        document: "documentH.pdf",
-    },
-    {
-        fy: "2023-24",
-        company: "Company I",
-        mouQuantity: "1300 MT",
-        accruedQuantity: "400 MT",
-        requiredRunRate: "108 MT/Month",
-        achieved: "Behind Schedule",
-        document: "documentI.pdf",
-    },
-    {
-        fy: "2023-24",
-        company: "Company J",
-        mouQuantity: "1100 MT",
-        accruedQuantity: "600 MT",
-        requiredRunRate: "92 MT/Month",
-        achieved: "On Track",
-        document: "documentJ.pdf",
-    },
-    {
-        fy: "2023-24",
-        company: "Company K",
-        mouQuantity: "1400 MT",
-        accruedQuantity: "1200 MT",
-        requiredRunRate: "117 MT/Month",
-        achieved: "Ahead of Schedule",
-        document: "documentK.pdf",
-    },
-    {
-        fy: "2023-24",
-        company: "Company L",
-        mouQuantity: "950 MT",
-        accruedQuantity: "750 MT",
-        requiredRunRate: "79 MT/Month",
-        achieved: "On Track",
-        document: "documentL.pdf",
-    }
+  {
+    fy: '2023-24',
+    company: 'Company J',
+    quantity: '1100 MT',
+    accrued: '600 MT',
+    runRate: '92 MT/Month',
+    achieved: 'On Track',
+  },
+  {
+    fy: '2023-24',
+    company: 'Company K',
+    quantity: '1400 MT',
+    accrued: '1200 MT',
+    runRate: '117 MT/Month',
+    achieved: 'Ahead of Schedule',
+  },
+  {
+    fy: '2023-24',
+    company: 'Company L',
+    quantity: '950 MT',
+    accrued: '750 MT',
+    runRate: '79 MT/Month',
+    achieved: 'On Track',
+  },
+  {
+    fy: '2024-25',
+    company: 'Company M',
+    quantity: '1000 MT',
+    accrued: '0 MT',
+    runRate: '96.9 MT/Month',
+    achieved: '0%',
+  },
+  // Add more mock items as needed
 ];
 
+const ITEMS_PER_PAGE = 3;
+
 const MOUPage = () => {
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 3;
+  const [page, setPage] = useState(1);
 
-    const totalPages = Math.ceil(mouData.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const currentMOUData = mouData.slice(startIndex, startIndex + itemsPerPage);
+  const totalPages = Math.ceil(mouData.length / ITEMS_PER_PAGE);
+  const start = (page - 1) * ITEMS_PER_PAGE;
+  const currentItems = mouData.slice(start, start + ITEMS_PER_PAGE);
 
-    const handleBackClick = () => window.history.back();
-    const handleDownload = (doc) => alert(`Downloading ${doc}`);
-    const handlePageClick = (page) => setCurrentPage(page);
-
-    return (
-        <div className="min-h-screen bg-gray-100 py-10 px-6">
-            {/* Header */}
-            <div className="flex justify-between items-center max-w-5xl mx-auto mb-10">
-                <div>
-                    <button
-                        className="flex items-center text-blue-600 hover:underline mb-2"
-                        onClick={handleBackClick}
-                    >
-                        <ArrowLeft className="h-5 w-5 mr-2" />
-                        Back
-                    </button>
-                    <h1 className="text-3xl font-bold text-gray-800">Memorandum of Understanding (MOU)</h1>
-                </div>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md">
-                    + Add MOU
-                </button>
-            </div>
-
-            {/* Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                {currentMOUData.map((mou, index) => (
-                    <Card key={index} className="shadow-lg rounded-xl bg-white">
-                        <CardHeader className="px-5 pt-5 pb-2">
-                            <p className="text-sm text-gray-500">FY: {mou.fy}</p>
-                        </CardHeader>
-                        <Divider />
-                        <CardBody className="px-5 py-4">
-                            <h2 className="text-lg font-semibold text-gray-800 mb-3">{mou.company}</h2>
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                    <p className="font-medium">{mou.mouQuantity}</p>
-                                    <p className="text-gray-500">MOU Quantity</p>
-                                </div>
-                                <div>
-                                    <p className="font-medium">{mou.accruedQuantity}</p>
-                                    <p className="text-gray-500">Accrued Quantity</p>
-                                </div>
-                                <div>
-                                    <p className="font-medium">{mou.requiredRunRate}</p>
-                                    <p className="text-gray-500">Required Run Rate</p>
-                                </div>
-                                <div>
-                                    <p className="font-medium">{mou.achieved}</p>
-                                    <p className="text-gray-500">Achieved</p>
-                                </div>
-                                <div
-                                    className="col-span-2 flex items-center mt-2 cursor-pointer hover:text-blue-600"
-                                    onClick={() => handleDownload(mou.document)}
-                                >
-                                    <DocumentIcon className="h-5 w-5 mr-2 text-gray-600" />
-                                    <span className="text-sm">Download Document</span>
-                                </div>
-                            </div>
-                        </CardBody>
-                    </Card>
-                ))}
-            </div>
-
-            {/* Pagination */}
-            <div className="mt-10 flex justify-center space-x-2">
-                {Array.from({ length: totalPages }, (_, i) => (
-                    <button
-                        key={i + 1}
-                        className={`px-4 py-2 rounded-md border ${
-                            currentPage === i + 1
-                                ? "bg-blue-600 text-white"
-                                : "bg-white text-gray-700 hover:bg-gray-200"
-                        }`}
-                        onClick={() => handlePageClick(i + 1)}
-                    >
-                        {i + 1}
-                    </button>
-                ))}
-            </div>
+  return (
+    <div className="min-h-screen bg-white px-6 py-4">
+      {/* Header */}
+      <div className="flex justify-between items-center border-b pb-4 mb-6">
+        <div>
+          <h2 className="text-2xl font-semibold">Memorandum of Understanding (MOU)</h2>
+          <button className="text-blue-600 text-sm mt-1">{'<'} Back</button>
         </div>
-    );
+        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          + Add MOU
+        </button>
+      </div>
+
+      {/* Cards */}
+      <div className="grid md:grid-cols-3 gap-6">
+        {currentItems.map((item, index) => (
+          <div key={index} className="border rounded-xl p-4 shadow hover:shadow-md transition-all">
+            <h4 className="font-semibold text-gray-600 mb-2">FY: {item.fy}</h4>
+            <h3 className="text-lg font-semibold">{item.company}</h3>
+            <p className="text-sm mt-2">MOU Quantity: <strong>{item.quantity}</strong></p>
+            <p className="text-sm">Accrued Quantity: <strong>{item.accrued}</strong></p>
+            <p className="text-sm">Required Run Rate: <strong>{item.runRate}</strong></p>
+            <p className="text-sm">Achieved: <strong>{item.achieved}</strong></p>
+            <button className="mt-3 text-blue-600 underline text-sm">Download Document</button>
+          </div>
+        ))}
+      </div>
+
+      {/* Pagination */}
+      <div className="flex justify-center mt-8 space-x-2">
+        <button
+          className="px-3 py-1 border rounded"
+          onClick={() => setPage(p => Math.max(p - 1, 1))}
+          disabled={page === 1}
+        >
+          {'<'}
+        </button>
+        {[...Array(totalPages)].map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setPage(i + 1)}
+            className={`px-3 py-1 border rounded ${page === i + 1 ? 'bg-blue-600 text-white' : ''}`}
+          >
+            {i + 1}
+          </button>
+        ))}
+        <button
+          className="px-3 py-1 border rounded"
+          onClick={() => setPage(p => Math.min(p + 1, totalPages))}
+          disabled={page === totalPages}
+        >
+          {'>'}
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export default MOUPage;
