@@ -1,0 +1,259 @@
+import React, { useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
+import { DocumentIcon } from '@heroicons/react/24/outline';
+import {
+    Card,
+    CardHeader,
+    CardBody,
+    Divider,
+} from "@heroui/react";
+
+const mouData = [
+    {
+        fy: '2024-2025',
+        company: 'M/S. DHARAMVIR & BROTHERS',
+        mouQuantity: '1T',
+        accruedQuantity: '0T',
+        requiredRunRate: '96.9T',
+        achieved: '0%',
+        document: 'Document1.pdf', // Changed to a filename
+    },
+    {
+        fy: '2024-2025',
+        company: 'M/S. DHARAMVIR & BROTHERS',
+        mouQuantity: '1000T',
+        accruedQuantity: '0T',
+        requiredRunRate: '96.9T',
+        achieved: '0%',
+        document: 'Document2.pdf', // Changed to a filename
+    },
+    {
+        fy: '2024-2025',
+        company: 'M/S. DHARAMVIR & BROTHERS',
+        mouQuantity: '1000T',
+        accruedQuantity: '0T',
+        requiredRunRate: '96.9T',
+        achieved: '0%',
+        document: 'Document3.pdf', // Changed to a filename
+    },
+        {
+        fy: '2024-2025',
+        company: 'M/S. DHARAMVIR & BROTHERS',
+        mouQuantity: '110000T',
+        accruedQuantity: '0T',
+        requiredRunRate: '96.9T',
+        achieved: '0%',
+        document: 'Document1.pdf', // Changed to a filename
+    },
+    {
+        fy: '2024-2025',
+        company: 'M/S. DHARAMVIR & BROTHERS',
+        mouQuantity: '21000T',
+        accruedQuantity: '0T',
+        requiredRunRate: '96.9T',
+        achieved: '0%',
+        document: 'Document2.pdf', // Changed to a filename
+    },
+    {
+        fy: '2024-2025',
+        company: 'M/S. DHARAMVIR & BROTHERS',
+        mouQuantity: '31000T',
+        accruedQuantity: '0T',
+        requiredRunRate: '96.9T',
+        achieved: '0%',
+        document: 'Document3.pdf', // Changed to a filename
+    },
+        {
+        fy: '2024-2025',
+        company: 'M/S. DHARAMVIR & BROTHERS',
+        mouQuantity: '71000T',
+        accruedQuantity: '0T',
+        requiredRunRate: '96.9T',
+        achieved: '0%',
+        document: 'Document1.pdf', // Changed to a filename
+    },
+    {
+        fy: '2024-2025',
+        company: 'M/S. DHARAMVIR & BROTHERS',
+        mouQuantity: '6000T',
+        accruedQuantity: '0T',
+        requiredRunRate: '96.9T',
+        achieved: '0%',
+        document: 'Document2.pdf', // Changed to a filename
+    },
+    {
+        fy: '2024-2025',
+        company: 'M/S. DHARAMVIR & BROTHERS',
+        mouQuantity: '7500T',
+        accruedQuantity: '0T',
+        requiredRunRate: '96.9T',
+        achieved: '0%',
+        document: 'Document3.pdf', // Changed to a filename
+    },
+        {
+        fy: '2024-2025',
+        company: 'M/S. DHARAMVIR & BROTHERS',
+        mouQuantity: '1000T',
+        accruedQuantity: '0T',
+        requiredRunRate: '96.9T',
+        achieved: '0%',
+        document: 'Document1.pdf', // Changed to a filename
+    },
+    {
+        fy: '2024-2025',
+        company: 'M/S. DHARAMVIR & BROTHERS',
+        mouQuantity: '1000T',
+        accruedQuantity: '0T',
+        requiredRunRate: '96.9T',
+        achieved: '0%',
+        document: 'Document2.pdf', // Changed to a filename
+    },
+    {
+        fy: '2024-2025',
+        company: 'M/S. DHARAMVIR & BROTHERS',
+        mouQuantity: '61000T',
+        accruedQuantity: '0T',
+        requiredRunRate: '96.9T',
+        achieved: '0%',
+        document: 'Document3.pdf', // Changed to a filename
+    },
+];
+
+const MOUPage = () => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 3;
+
+    const handleBackClick = () => {
+        window.history.back();
+    };
+
+    const handlePageClick = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+
+    const handleDownload = (documentName) => {
+        // Mock download function
+        console.log(`Downloading ${documentName}`);
+        alert(`Downloading ${documentName}`); // Replace with actual download logic
+    };
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentMOUData = mouData.slice(startIndex, endIndex);
+
+    return (
+        <div className="container mx-auto px-4 py-8">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-col items-start">
+                    <button className="mr-4 flex items-center" onClick={handleBackClick}>
+                        <ArrowLeft className="h-6 w-6 mr-1" />
+                        Back
+                    </button>
+                    <h1 className="text-2xl font-semibold">MOU</h1>
+                </div>
+                <div className="flex justify-end">
+                    <button className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow">
+                        + Add MOU
+                    </button>
+                </div>
+            </div>
+
+            {/* MOU List */}
+            <div>
+                {currentMOUData.map((mou, index) => (
+                    <Card key={index} className="mb-4">
+                        <CardHeader className="flex flex-col items-start text-gray-600 text-sm">
+                            <div>FY: {mou.fy}</div>
+                            <hr className="w-full mt-1 border-t border-gray-300" />
+                        </CardHeader>
+                        <Divider />
+                        <CardBody>
+                            <div className="text-lg font-semibold">{mou.company}</div>
+                            <div className="grid grid-cols-5 gap-4 mt-2 text-sm">
+                                <div>
+                                    <div>{mou.mouQuantity}</div>
+                                    <div className="text-xs text-gray-500">MOU Quantity</div>
+                                </div>
+                                <div>
+                                    <div>{mou.accruedQuantity}</div>
+                                    <div className="text-xs text-gray-500">Accrued Quantity</div>
+                                </div>
+                                <div>
+                                    <div>{mou.requiredRunRate}</div>
+                                    <div className="text-xs text-gray-500">Required Run Rate/Month</div>
+                                </div>
+                                <div>
+                                    <div>{mou.achieved}</div>
+                                    <div className="text-xs text-gray-500">Achieved</div>
+                                </div>
+                                <div className="flex flex-col items-center cursor-pointer" onClick={() => handleDownload(mou.document)}>
+                                    <DocumentIcon className="h-5 w-5 text-gray-600" />
+                                    <div className="text-xs text-gray-500">Document</div>
+                                </div>
+                            </div>
+                        </CardBody>
+                    </Card>
+                ))}
+            </div>
+
+            {/* Pagination */}
+            <div className="flex justify-between items-center mt-6">
+                <div></div>
+                <div className="flex items-center">
+                    <button
+                        className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-l"
+                        onClick={() => handlePageClick(currentPage - 1)}
+                        disabled={currentPage === 1}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                        >
+                            <path
+                                fillRule="evenodd"
+                                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                clipRule="evenodd"
+                            />
+                        </svg>
+                    </button>
+                    <button
+                        className={`bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 ${currentPage === 1 ? 'bg-blue-500 text-white' : ''}`}
+                        onClick={() => handlePageClick(1)}
+                    >
+                        1
+                    </button>
+                    <button
+                        className={`bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 ${currentPage === 2 ? 'bg-blue-500 text-white' : ''}`}
+                        onClick={() => handlePageClick(2)}
+                        disabled={mouData.length <= itemsPerPage}
+                    >
+                        2
+                    </button>
+                    <button
+                        className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-r"
+                        onClick={() => handlePageClick(currentPage + 1)}
+                        disabled={endIndex >= mouData.length}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                        >
+                            <path
+                                fillRule="evenodd"
+                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                clipRule="evenodd"
+                            />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default MOUPage;
