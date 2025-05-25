@@ -1,4 +1,4 @@
-MOU FORM
+MOU FORM:
 import React, { useState, useRef, useEffect } from 'react';
 import Select from 'react-select';
 import {useSelector} from 'react-redux';
@@ -187,7 +187,17 @@ const MouForm = ({ onClose }) => {
         });
     });
   };
-
+    const handleReset = () => {
+    setSelectedYear(null);
+    setCustomerCode([]);
+    setSelectedAutoAncillaryCodes([]);
+    setMouQuantity('');
+    setAttachment(null);
+    setFileTypeError(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''; // Clear the selected file in the input
+    }
+  };
   const submitFormData = (attachmentId) => { // Removed async
     setIsLoading(true);
 
@@ -270,12 +280,11 @@ const MouForm = ({ onClose }) => {
         console.error('Error during form submission:', error);
       });
   };
-
   const customStyles = {
     control: (provided, state) => {
       return {
         ...provided,
-        borderRadius: '4px',
+        borderRadius: '20px', // Circular edges for react-select
         border: '1px solid #ddd',
         fontSize: '16px',
         color: '#333',
@@ -314,7 +323,6 @@ const MouForm = ({ onClose }) => {
       };
     },
   };
-
 
   return (
     
@@ -423,9 +431,17 @@ const MouForm = ({ onClose }) => {
               </p>
             )}
 
-            <button type="submit" className="submitButton" disabled={isLoading}>
+            {/* <button type="submit" className="submitButton" disabled={isLoading}>
               {isLoading ? 'Submitting...' : 'Submit'}
-            </button>
+            </button> */}
+            <div className="formButtons">
+              <button type="reset" className="resetButton" onClick={handleReset}>
+                Reset
+              </button>
+              <button type="submit" className="submitButton" disabled={isLoading}>
+                {isLoading ? 'Submitting...' : 'Submit'}
+              </button>
+            </div>
           </form>
         </div>
       </div>
@@ -441,8 +457,7 @@ MouForm.propTypes = {
 
 export default MouForm;
 
-SCSS:
-
+SCSS
 .mouFormOverlay {
   .overlay {
     margin-top: 75px;
@@ -461,7 +476,7 @@ SCSS:
   .popup {
     background-color: white;
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 20px;
     width: 40%;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     position: relative;
@@ -469,11 +484,12 @@ SCSS:
     &::before {
       content: "";
       position: absolute;
+      border-radius: 20px;
       top: 0;
       left: 0;
       width: 100%;
       height: 60px;
-      background-color: #2274BD;
+    //   background-color: #2274BD;
       z-index: -1;
     }
   }
@@ -497,13 +513,13 @@ SCSS:
     label {
       display: inline-block; /* or display: inline; */;
       margin-bottom: 5px;
-      font-weight: bold;
+    //   font-weight: bold;
     }
 
     input {
       width: 100%;
       padding: 8px;
-      border-radius: 4px;
+      border-radius: 20px; /* Circular edges for input boxes */
       border: 1px solid #ddd;
       font-size: 16px;
     }
@@ -515,13 +531,13 @@ SCSS:
   .required-asterisk {
     color: red;
     margin-left: 4px; /* Adjust as needed for spacing */
-  }  
+  }
   .chooseFileButton {
     background-color: #f0f0f0;
     color: #333;
     padding: 6px 10px;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: 20px; /* Circular edges for Choose File button */
     cursor: pointer;
     font-size: 16px;
     display: inline-block;
@@ -541,9 +557,9 @@ SCSS:
   .submitButton {
     background-color: #2274BD;;
     color: white;
-    padding: 8px 12px;
+    padding: 8px 50px;
     border: none;
-    border-radius: 4px;
+    border-radius: 15px;
     width: fit-content;
     cursor: pointer;
     font-size: 18px;
@@ -577,9 +593,7 @@ SCSS:
     font-size: 14px;
     margin-top: 5px;
   }
-
-  /* Custom Alert Popup Styles */
-  .custom-alert-popup {
+    .custom-alert-popup {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -623,4 +637,35 @@ SCSS:
       border-color: #b05302;
     }
   }
+  /* Custom Alert Popup Styles */
+  
+  .formButtons {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+
+    button {
+      margin: 0 5px; /* spacing between buttons */
+    }
+  }
+
+  .resetButton {
+    background-color: #ddd;
+    color: #333;
+    padding: 8px 50px;
+    border: none;
+    border-radius: 15px; /* Rounded edges for reset button */
+    width: fit-content;
+    cursor: pointer;
+    font-size: 18px;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+
+    &:hover {
+      background-color: #ccc;
+    }
+  }
 }
+
