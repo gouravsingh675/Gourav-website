@@ -1,106 +1,626 @@
-import React, { useState } from 'react';
+MOU FORM
+import React, { useState, useRef, useEffect } from 'react';
+import Select from 'react-select';
+import {useSelector} from 'react-redux';
+import PropTypes from 'prop-types';
+import './MouForm.scss';
+import SCVWebAPI from '../../../framework/api';
 
-const mouData = [
-  {
-    fy: '2023-24',
-    company: 'Company J',
-    quantity: '1100 MT',
-    accrued: '600 MT',
-    runRate: '92 MT/Month',
-    achieved: 'On Track',
-  },
-  {
-    fy: '2023-24',
-    company: 'Company K',
-    quantity: '1400 MT',
-    accrued: '1200 MT',
-    runRate: '117 MT/Month',
-    achieved: 'Ahead of Schedule',
-  },
-  {
-    fy: '2023-24',
-    company: 'Company L',
-    quantity: '950 MT',
-    accrued: '750 MT',
-    runRate: '79 MT/Month',
-    achieved: 'On Track',
-  },
-  {
-    fy: '2024-25',
-    company: 'Company M',
-    quantity: '1000 MT',
-    accrued: '0 MT',
-    runRate: '96.9 MT/Month',
-    achieved: '0%',
-  },
-  // Add more mock items as needed
-];
+const MouForm = ({ onClose }) => {
+  const [selectedYear, setSelectedYear] = useState(null);
+  const [customerCode, setCustomerCode] = useState([]);// Customer code options
+  const [autoAncillaryCodeArray, setAutoAncillaryCodeArray] = useState([]);// autoAncillaryCodeArray options
+  const [selectedAutoAncillaryCodes, setSelectedAutoAncillaryCodes] = useState([]);// selectedAutoAncillaryCodes options
+  const [mouQuantity, setMouQuantity] = useState('');
+  const [attachment, setAttachment] = useState(null);
+  const fileInputRef = useRef(null);
+  const [yearOptions, setYearOptions] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [custCodeOptions, setCustCodeOptions] = useState([]);// Customer code options
+  const [custCodeLoading, setCustCodeLoading] = useState(false);// Loading state for customer codes
+  const [autoAncillaryCodeLoading, setAutoAncillaryCodeLoading] = useState(false);// Loading state for autoAncillaryCode
+  const [fileTypeError, setFileTypeError] = useState(false);
+  const pan = 'AAGCA9379P';
+  // New state variables for the custom popup
+  const [popup, setPopup] = useState({
+    show: false,
+    message: '',
+    type: 'success', // or 'error', 'warning', etc.  You can style based on type
+  });
+  // Access auth state using useSelector 
+  const auth = useSelector((state) => state.auth); 
+  console.log("auth is",auth);
+  const getCustCode = () => { // Removed async
+    setCustCodeLoading(true);
+    const ccOptions = [];
+    ccOptions.push({ value: 'All', label: 'All' });
+    const url = '/BillTo/GetBillTo';
+    const postBody = {
+    //   PAN: auth.userInfo.type === 'PAN' ? auth.userInfo.code : '',
+      PAN: pan,
+    //   custID: auth.userInfo.type === 'CUSTOMER_CODE' ? auth.userInfo.custCodeAccess : '',
+    };
 
-const ITEMS_PER_PAGE = 3;
+    return new Promise((resolve, reject) => {
+      SCVWebAPI.post(url, null, null, postBody)
+        .then((response) => {
+          const uniqueCheckArray = [];
 
-const MOUPage = () => {
-  const [page, setPage] = useState(1);
+          for (let i = 0; i < response.length; i += 1) {
+            if(!uniqueCheckArray.includes(response[i].CustCode)) {
+              ccOptions.push({
+                value: response[i].CustCode,
+                label: `${response[i].CustCode} - ${response[i].Name} - ${response[i].City}`,
+              });
+              uniqueCheckArray.push(response[i].CustCode);
+            }
+          }
+          setCustCodeOptions(ccOptions);
+          resolve(); // Resolve the promise
+        })
+        .catch((error) => {
+          setPopup({ show: true, message: 'Failed to fetch customer codes.', type: 'error' });
+          reject(error); // Reject the promise
+        })
+        .finally(() => {
+          setCustCodeLoading(false);
+        });
+    });
+  };
 
-  const totalPages = Math.ceil(mouData.length / ITEMS_PER_PAGE);
-  const start = (page - 1) * ITEMS_PER_PAGE;
-  const currentItems = mouData.slice(start, start + ITEMS_PER_PAGE);
+  const getAutoAncillaryCodes = () => {
+    setAutoAncillaryCodeLoading(true);
+    const url = '/AutoAncil/GetCUstomerMapping';
+    const postBody = {
+      employeeEmail: '',
+    //   employeeId: auth.userInfo.type === 'PAN' ? auth.userInfo.code : ''z
+      employeeId: pan
+    };
+    SCVWebAPI.post(url, null, null, postBody)
+      .then((response) => {
+        const autoAncillaryCodeDropDownSet = new Set();
+        autoAncillaryCodeDropDownSet.add({
+          value: 'All',
+          label: 'All'
+        });
+        response.forEach((e) => {
+          autoAncillaryCodeDropDownSet.add({
+            value: e.CustomerCode,
+            label: e.Name
+          });
+        });
+        setAutoAncillaryCodeArray(Array.from(autoAncillaryCodeDropDownSet));
+        setAutoAncillaryCodeLoading(false);
+      })
+      .catch(() => {
+        setAutoAncillaryCodeLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    const currentYear = new Date().getFullYear();
+    const startYear = currentYear - 4;
+    const endYear = currentYear + 2;
+    const options = [];
+
+    for (let i = startYear; i <= endYear; i += 1) {
+      const year = i;
+      // eslint-disable-next-line no-use-before-define
+      const formattedYear = formatFinancialYear(year); // Format the year
+      options.push({
+        value: formattedYear, // Use the formatted year as the value
+        label: formattedYear, // Use the formatted year as the label
+      });
+    }
+    setYearOptions(options);
+    // Fetch customer codes when the component mounts
+    // eslint-disable-next-line no-use-before-define
+    getCustCode();
+    getAutoAncillaryCodes();
+  }, []);
+
+
+  const formatFinancialYear = (year) => {
+    const nextYear = year + 1;
+    const nextYearShort = nextYear.toString().slice(-2);
+    return `${year}-${nextYearShort}`;
+  };
+
+  const handleYearChange = (selectedOption) => {
+    setSelectedYear(selectedOption);
+  };
+
+  const handleCustomerCodeChange = (selectedOptions) => {
+    if(selectedOptions && selectedOptions.some((option) => { return option.value === 'All'; })) {
+      // "All" is selected, so select all other options
+      setCustomerCode(custCodeOptions.filter((option) => { return option.value !== 'All'; }));
+    } else {
+      setCustomerCode(selectedOptions || []);
+    }
+  };
+
+  const handleAutoAncillaryCodeChange = (selectedOptions) => {
+    if(selectedOptions && selectedOptions.some((option) => { return option.value === 'All'; })) {
+      // "All" is selected, so select all other options
+      setSelectedAutoAncillaryCodes(autoAncillaryCodeArray.filter((option) => { return option.value !== 'All'; }));
+    } else {
+      setSelectedAutoAncillaryCodes(selectedOptions || []);
+    }
+  };
+
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    const allowedTypes = ['application/pdf', 'image/jpeg',
+      'image/jpg', 'image/png'
+    ];
+    if(file && allowedTypes.includes(file.type)) {
+      setAttachment(file);
+      setFileTypeError(false);
+    } else {
+      setAttachment(null);
+      setFileTypeError(true);
+    }
+  };
+
+  const handleButtonClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const uploadFile = (document) => {
+    setIsLoading(true);
+    return new Promise((resolve, reject) => {
+      const formData = new FormData();
+
+      formData.append('file', document);
+
+      SCVWebAPI.dbPost('/attachments/upload', {}, {}, formData)
+        .then((response) => {
+          resolve(response.fileId);
+        })
+        .catch((error) => {
+          setPopup({ show: true, message: 'File upload failed!', type: 'error' });
+          reject(error); // Reject with the error object
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    });
+  };
+
+  const submitFormData = (attachmentId) => { // Removed async
+    setIsLoading(true);
+
+    // Combine customer and ancillary codes
+    const customerCodeValues = Array.isArray(customerCode) ? customerCode.map((option) => { return option.value; }) : [];
+    const ancillaryCodeValues = Array.isArray(selectedAutoAncillaryCodes) ? selectedAutoAncillaryCodes.map((option) => { return option.value; }) : [];
+
+    // Combine customer and ancillary codes into a single array
+    const allCodes = [...customerCodeValues, ...ancillaryCodeValues];
+    const body = {
+      attachment: attachmentId,
+      createdBy: auth.userInfo.name,
+      customerCodes: allCodes, // Use the combined array
+      fyDate: selectedYear && selectedYear.value ? selectedYear.value : '',
+      mouQuantity,
+      updatedBy: auth.userInfo.name,
+    };
+
+    return new Promise((resolve, reject) => {
+      SCVWebAPI.dbPost('/enquiry/mou/save', {}, {}, body)
+        .then(() => {
+          setPopup({ show: true, message: 'Form submitted successfully!', type: 'success' });
+          //onClose();
+          setTimeout(() => {
+            onClose();
+            //window.location.reload();
+          }, 2000);
+          resolve(true); // Resolve with true to indicate success
+        })
+        .catch((error) => {
+          setPopup({ show: true, message: 'Form submission failed!', type: 'error' });
+          reject(error); // Reject the promise
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    });
+  };
+
+  const handleSubmit = (e) => { // Removed async
+    e.preventDefault();
+    if(!selectedYear) {
+      setPopup({ show: true, message: 'Please select Financial year.', type: 'warning' });
+      return;
+    }
+
+    // Validation: Either customerCode or selectedAutoAncillaryCodes must be selected
+    if(!customerCode || customerCode.length === 0) {
+      setPopup({ show: true, message: 'Please select Customer Code ', type: 'warning' });
+      return;
+    }
+    if(!mouQuantity) {
+      setPopup({ show: true, message: 'Please enter Mou Quantity', type: 'warning' });
+      return;
+    }
+    if(!attachment) {
+      setPopup({ show: true, message: 'Please select a file to upload.', type: 'warning' });
+      return;
+    }
+
+    // Step 1: Upload the file and get the fileId
+    uploadFile(attachment)
+      .then((uploadedFileId) => {
+        if(uploadedFileId) {
+          // Step 2: If file upload is successful, submit the form data
+          return submitFormData(uploadedFileId); // Return the promise
+        }
+        return Promise.resolve(false); // Resolve with false if file upload failed
+      })
+      .then((submissionResult) => {
+        if(submissionResult) {
+          setTimeout(() => {
+            onClose();
+            window.location.reload(); //remove window.location.reload()
+          }, 3000);
+        }
+      })
+      .catch((error) => {
+        // Handle errors from uploadFile or submitFormData
+        console.error('Error during form submission:', error);
+      });
+  };
+
+  const customStyles = {
+    control: (provided, state) => {
+      return {
+        ...provided,
+        borderRadius: '4px',
+        border: '1px solid #ddd',
+        fontSize: '16px',
+        color: '#333',
+        padding: '8px',
+        boxShadow: state.isFocused ? '0 0 0 1px #2684ff' : null,
+        '&:hover': {
+          borderColor: state.isFocused ? '#2684ff' : '#aaa',
+        },
+      };
+    },
+    option: (provided, state) => {
+      return {
+        ...provided,
+        fontSize: '16px',
+        color: '#333',
+        backgroundColor: state.isFocused ? 'f0f0f0' : null,
+        '&:hover': {
+          backgroundColor: '#e0e0e0',
+        },
+      };
+    },
+    menu: (provided) => {
+      return {
+        ...provided,
+        borderRadius: '4px',
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+        overflow: 'auto',
+        maxHeight: '200px', // Adjust as needed
+      };
+    },
+    singleValue: (provided) => {
+      return {
+        ...provided,
+        fontSize: '16px',
+        color: '#333',
+      };
+    },
+  };
+
 
   return (
-    <div className="min-h-screen bg-white px-6 py-4">
-      {/* Header */}
-      <div className="flex justify-between items-center border-b pb-4 mb-6">
+    
+    <div className="mouFormOverlay">
         <div>
-          <h2 className="text-2xl font-semibold">Memorandum of Understanding (MOU)</h2>
-          <button className="text-blue-600 text-sm mt-1">{'<'} Back</button>
+            {console.log('now Rendering component')}
         </div>
-        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-          + Add MOU
-        </button>
-      </div>
-
-      {/* Cards */}
-      <div className="grid md:grid-cols-3 gap-6">
-        {currentItems.map((item, index) => (
-          <div key={index} className="border rounded-xl p-4 shadow hover:shadow-md transition-all">
-            <h4 className="font-semibold text-gray-600 mb-2">FY: {item.fy}</h4>
-            <h3 className="text-lg font-semibold">{item.company}</h3>
-            <p className="text-sm mt-2">MOU Quantity: <strong>{item.quantity}</strong></p>
-            <p className="text-sm">Accrued Quantity: <strong>{item.accrued}</strong></p>
-            <p className="text-sm">Required Run Rate: <strong>{item.runRate}</strong></p>
-            <p className="text-sm">Achieved: <strong>{item.achieved}</strong></p>
-            <button className="mt-3 text-blue-600 underline text-sm">Download Document</button>
-          </div>
-        ))}
-      </div>
-
-      {/* Pagination */}
-      <div className="flex justify-center mt-8 space-x-2">
-        <button
-          className="px-3 py-1 border rounded"
-          onClick={() => setPage(p => Math.max(p - 1, 1))}
-          disabled={page === 1}
-        >
-          {'<'}
-        </button>
-        {[...Array(totalPages)].map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setPage(i + 1)}
-            className={`px-3 py-1 border rounded ${page === i + 1 ? 'bg-blue-600 text-white' : ''}`}
-          >
-            {i + 1}
+      <div className="overlay">
+        <div className="popup">
+          <button onClick={onClose} className="closeButton">
+            ×
           </button>
-        ))}
-        <button
-          className="px-3 py-1 border rounded"
-          onClick={() => setPage(p => Math.min(p + 1, totalPages))}
-          disabled={page === totalPages}
-        >
-          {'>'}
-        </button>
+          <h3>Enter MOU Details</h3>
+
+          {/* Custom Popup Component */}
+          {popup.show && (
+          <div className={`custom-alert-popup ${popup.type}`}>
+            <p>{popup.message}</p>
+            <button onClick={() => { return setPopup({ ...popup, show: false }); }}>OK</button>
+          </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="mouForm">
+            <div className="formGroup">
+              <label htmlFor="financialYear">Select Financial Year</label>
+              <span className="required-asterisk">*</span>
+              <Select
+                id="financialYear"
+                options={yearOptions}
+                value={selectedYear}
+                onChange={handleYearChange}
+                styles={customStyles}
+                placeholder="Financial Year"
+              />
+            </div>
+            <div className="formGroup">
+              <label htmlFor="customerCode">Select Customer Codes</label>
+              <span className="required-asterisk">*</span>
+              <Select
+                id="customerCode"
+                options={custCodeOptions}
+                value={customerCode}
+                isMulti
+                onChange={handleCustomerCodeChange}
+                isLoading={custCodeLoading}
+                styles={customStyles}
+                placeholder="Select Customer"
+              />
+              {custCodeLoading && <p>Loading customer codes...</p>}
+              {/* {formErrors.customerCode && (
+                <p className="errorText">{formErrors.customerCode}</p>
+              )} */}
+            </div>
+
+            <div className="formGroup">
+              <label htmlFor="autoAncillaryCode">Select Ancillary Codes</label>
+              <Select
+                id="autoAncillaryCode"
+                options={autoAncillaryCodeArray}
+                value={selectedAutoAncillaryCodes}
+                isMulti
+                // onChange={(selectedOptions) => { return setSelectedAutoAncillaryCodes(selectedOptions || []); }} // Handle multi-select
+                onChange={handleAutoAncillaryCodeChange}
+                isLoading={autoAncillaryCodeLoading}
+                styles={customStyles}
+                placeholder="Select Ancillary Code"
+              />
+              {autoAncillaryCodeLoading && <p>Loading Ancillary codes...</p>}
+            </div>
+
+
+            <div className="formGroup">
+              <label htmlFor="mouQuantity">MOU Quantity In Tonnes</label>
+              <span className="required-asterisk">*</span>
+              <input
+                type="number"
+                id="mouQuantity"
+                value={mouQuantity}
+                onChange={(e) => { return setMouQuantity(e.target.value); }}
+                placeholder="Enter MOU quantity in Tonnes"
+              />
+              {/* {formErrors.mouQuantity && (
+                <p className="errorText">{formErrors.mouQuantity}</p>
+              )} */}
+            </div>
+
+            <div className="formGroup">
+              <label htmlFor="attachment">Add Attachment</label>
+              <span className="required-asterisk">*</span>
+              <button type="button" onClick={handleButtonClick} className="chooseFileButton">
+                Choose File
+              </button>
+              <input
+                type="file"
+                id="attachment"
+                style={{ display: 'none' }}
+                onChange={handleFileChange}
+                ref={fileInputRef}
+                disabled={isLoading}
+              />
+              {attachment && <p className="fileName">Selected file: {attachment.name}</p>}
+            </div>
+            {fileTypeError && (
+              <p className="errorText">
+                Only PDF, JPG, JPEG, and PNG files are allowed.
+              </p>
+            )}
+
+            <button type="submit" className="submitButton" disabled={isLoading}>
+              {isLoading ? 'Submitting...' : 'Submit'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
 };
 
-export default MOUPage;
+
+MouForm.propTypes = {
+  onClose: PropTypes.func.isRequired,
+};
+
+
+export default MouForm;
+
+SCSS:
+
+.mouFormOverlay {
+  .overlay {
+    margin-top: 75px;
+    margin-bottom: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 83%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+  }
+
+  .popup {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 40%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 0; /* Create stacking context */
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background-color: #2274BD;
+      z-index: -1;
+    }
+  }
+
+  h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: rgb(0, 0, 0);
+  }
+
+  .mouForm {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .formGroup {
+    margin-bottom: 6px;
+    &:last-child {
+      margin-bottom: 10px;
+    }
+    label {
+      display: inline-block; /* or display: inline; */;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      font-size: 16px;
+    }
+
+    input[type="file"] {
+      padding: 5px;
+    }
+  }
+  .required-asterisk {
+    color: red;
+    margin-left: 4px; /* Adjust as needed for spacing */
+  }  
+  .chooseFileButton {
+    background-color: #f0f0f0;
+    color: #333;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    display: inline-block;
+    margin-top: 5px;
+    display: block;
+    &:hover {
+      background-color: #e0e0e0;
+    }
+  }
+
+  .fileName {
+    margin-top: 5px;
+    font-size: 14px;
+    color: #555;
+  }
+
+  .submitButton {
+    background-color: #2274BD;;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    width: fit-content;
+    cursor: pointer;
+    font-size: 18px;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+
+    &:hover {
+      background-color: #0056b3;
+    }
+  }
+
+  .closeButton {
+    background: none;
+    border: none;
+    font-size: 36px;
+    font-weight: bold;
+    color: rgb(5, 5, 5);
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    cursor: pointer;
+
+    &:hover {
+      color: #007bff;
+    }
+  }
+  .errorText {
+    color: red;
+    font-size: 14px;
+    margin-top: 5px;
+  }
+
+  /* Custom Alert Popup Styles */
+  .custom-alert-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 10000;
+    text-align: center;
+    border-radius: 5px;
+
+    p {
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+
+      &:hover {
+        background-color: #0056b3;
+      }
+    }
+
+    &.success {
+      border-color: #28a745;
+    }
+
+    &.error {
+      border-color: #dc3545;
+    }
+
+    &.warning {
+      border-color: #b05302;
+    }
+  }
+}
