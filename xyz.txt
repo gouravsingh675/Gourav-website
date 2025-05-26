@@ -72,3 +72,156 @@ and arrow for next page ">"
 
 
 Give me React code that is 100 % identical to the attached screenshot.
+
+import React, { useEffect, useState } from "react";
+import { CircularProgress } from "@heroui/react";
+import SCVWebAPI from "../../../framework/api";
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+  createColumnHelper,
+} from "@tanstack/react-table";
+
+const columnHelper = createColumnHelper();
+
+const columns = [
+  columnHelper.accessor("soldToParty", {
+    header: "SOLD TO PARTY",
+  }),
+  columnHelper.accessor("outstanding", {
+    header: "OUTSTANDING (IN LACS)",
+  }),
+  columnHelper.accessor("overdue", {
+    header: "OVERDUE (IN LACS)",
+  }),
+];
+
+export default function AccountsPage() {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const rowsPerPage = 10;
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const response = await SCVWebAPI.post(
+        "/CompassAccountSummary/GetInvoiceSummary",
+        {},
+        {},
+        {
+          SoldToParty: "0000102461",
+          ancilCustId: "",
+        }
+      );
+
+      const transformedData = response.map((item) => ({
+        soldToParty: item.SoldToParty || "",
+        outstanding: item.Outstanding || "",
+        overdue: item.Overdue || "",
+      }));
+
+      setData(transformedData);
+    } catch (error) {
+      alert("Error fetching accounts data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const table = useReactTable({
+    data: data.slice(page * rowsPerPage, (page + 1) * rowsPerPage),
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  return (
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-4">
+        <button className="text-blue-600 font-medium">&lt; Back</button>
+        <h1 className="text-2xl font-bold">Accounts</h1>
+        <button className="bg-gray-100 px-3 py-1 rounded">Export</button>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center items-center h-40">
+          <CircularProgress
+            classNames={{
+              svg: "w-36 h-36 stroke-blue-700",
+              indicator: "stroke-blue-700",
+              track: "stroke-blue-700/5",
+              value: "text-3xl font-semibold text-blue-700",
+            }}
+            aria-label="Loading..."
+            showValueLabel={true}
+            value={75} // or dynamic value
+          />
+        </div>
+      ) : (
+        <div>
+          <table className="min-w-full border border-gray-200">
+            <thead className="bg-blue-900 text-white">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <th key={header.id} className="p-2 text-left border-r border-white">
+                      {flexRender(header.column.columnDef.header, header.getContext())}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {table.getRowModel().rows.map((row) => (
+                <tr key={row.id} className="border-t">
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id} className="p-2 border-r">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Pagination */}
+          <div className="flex justify-between items-center mt-4 text-sm text-gray-700">
+            <div>
+              Rows per page:
+              <select
+                className="ml-2 border rounded px-1 py-0.5"
+                value={rowsPerPage}
+                disabled
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={30}>30</option>
+              </select>
+            </div>
+            <div>
+              {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, data.length)} of {data.length}
+            </div>
+            <div className="space-x-2">
+              <button onClick={() => setPage((p) => Math.max(p - 1, 0))} disabled={page === 0}>
+                &lt;
+              </button>
+              <button
+                onClick={() =>
+                  setPage((p) => (p + 1) * rowsPerPage < data.length ? p + 1 : p)
+                }
+                disabled={(page + 1) * rowsPerPage >= data.length}
+              >
+                &gt;
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
