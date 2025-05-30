@@ -1,227 +1,247 @@
-I have attached a screenshot of Account page.
-In the top left we have back button.
+Please make the side bar navigation as shown in screenshot attached.
 
-Then we have Accounts text in bold. In the same level we have Export in the right most. I am removing columns for time being.
-
-Now we gave table with 3 columns.
-
-SOLD TO PARTY, OUTSTANDING (IN LACS) ,  OVERDUE (IN LACS)
-
-I'm using ,"@tanstack/react-table": "^8.13.0",
-i have tailwind also intalled. 
-
-FOR Loader, you can below loader
-            {loading ? (
-                    <div className="flex justify-center items-center h-40">
-                        <CircularProgress
-                            classNames={{
-                                svg: "w-36 h-36 stroke-blue-700",
-                                indicator: "stroke-blue-700",
-                                track: "stroke-blue-700/5",
-                                value: "text-3xl font-semibold text-blue-700",
-                            }}
-                            aria-label="Loading..."
-                            showValueLabel={true}
-                            value={value}
-
-                        />
-                    </div>
-
-import { CircularProgress } from "@heroui/react";
-
-
-To get the data use the below function.
-import SCVWebAPI from '../../../framework/api';
- const fetchData = async () => {
-      setLoading(true);
-      try {
-        // Replace with your actual API endpoint and request body
-        const response = await SCVWebAPI.post(
-          '/CompassAccountSummary/GetInvoiceSummary', // Your endpoint
-          {}, // headers
-          {}, // config
-          {
-            SoldToParty: '0000102461',
-            ancilCustId: '',
-          } // request body
-        );
-
-        // Transform API response to match your table structure if needed
-        const transformedData = response.map(item => ({
-          soldToParty: item.SoldToParty || '',
-          outstanding: item.Outstanding || '',
-          overdue: item.Overdue || '',
-        }));
-
-        setData(transformedData);
-      } catch (error) {
-        alert('Error fetching accounts data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-Then at bottom we have pagination:
-
-
-Rows per page (10,20,30)
-
-1-5 of 13
-and arrow for previous page "<"
-and arrow for next page ">"
-
-
-Give me React code that is 100 % identical to the attached screenshot.
-
-import React, { useEffect, useState } from "react";
-import { CircularProgress } from "@heroui/react";
-import SCVWebAPI from "../../../framework/api";
-import {
-  useReactTable,
-  getCoreRowModel,
-  flexRender,
-  createColumnHelper,
-} from "@tanstack/react-table";
-
-const columnHelper = createColumnHelper();
-
-const columns = [
-  columnHelper.accessor("soldToParty", {
-    header: "SOLD TO PARTY",
-  }),
-  columnHelper.accessor("outstanding", {
-    header: "OUTSTANDING (IN LACS)",
-  }),
-  columnHelper.accessor("overdue", {
-    header: "OVERDUE (IN LACS)",
-  }),
+this is module-route.js
+import forecastPlanIcon from '../assets/images/forecast-plan-place-orders.svg';
+import productIcon from '../assets/images/check-products-place-enquiry.svg'; 
+import trackmyorder from '../assets/images/track-my-orders.svg'; 
+import documenticon from '../assets/images/document.svg';
+import dashboardreporticon from '../assets/images/dashboards-and-reports.svg';
+import financialrecordicon from '../assets/images/financial-records.svg';
+import myvoiceicon from '../assets/images/my-voice.svg';
+import aboutusicon from '../assets/images/about-us.svg';
+ 
+const allModules = [
+ {
+    label: 'Check products & Place enquiry',
+    icon:  productIcon,
+    code: 'PRODUCTS',
+    menuItems: [
+        { label: 'Products', route: '/product-catalog',code:'product-catalog' },
+        { label: 'Enquiry', route: '/submit-enquiry',code:'enquiryPlacement' }
+    ],
+ },
+  {
+    label: 'Track My Orders',
+    icon: trackmyorder,
+    route: '/track-orders',
+    code: 'TRACK',
+    menuItems: [
+      { label: 'Order Tracking', route: '/ordertracking', code:'orderTracking' },
+      { label: 'Order Progress', route: '/current-orders',code:'current-orders' },
+      { label: 'Purchase Orders', route: '/current-orders',code:'current-orders' },
+      { label: 'Inventory ', route: '/new-inv',code:'inventory' },
+    ],
+  },
+  {
+    label: 'Forecast, plan & Place Orders',
+    icon: forecastPlanIcon,
+    code: 'PLAN',
+    menuItems: [
+      { label: 'Forecast', route: '/forecast-details', code:'forecast-details' },
+      { label: 'Indent', route: '/planning-tools', code:'planning-tools' },
+    ],
+  },
+    {
+    label: 'Documents',
+    icon: documenticon,
+    route: '/about-us',
+    code: 'postSupplyServices',
+    menuItems: [
+      { label: 'Invoice & TC', route: '/invoice-tc', code:'invoiceTcRepository' },
+      { label: 'Packaging List', route: '/packaging-list',code:'packaging-list' },
+      { label: 'MoU', route: '/mou',code:'mou' },
+      { label: 'LR', route: '/lr',code:'lr' },
+    ],
+  },
+  {
+    label: 'Dashboards & Reports',
+    icon: dashboardreporticon,
+    route: '/dashboards',
+    code: 'dashboard',
+    menuItems: [
+      { label: 'Executive Inventory Summary', route: '/executive-summary',code:'dashboard' },
+      { label: 'Auto Inventory', route: '/auto-inv',code:'inventoryAuto' }
+    ],
+  },
+  {
+    label: 'My Financial Records',
+    icon: financialrecordicon,
+    code: 'Financial',
+    menuItems: [
+      { label: 'Accounts Statement ', route: '/accounts',code:'accountsView' },
+      { label: 'Credit Limit', route: '/credit-limit',code:'credit-limit' },
+    ],
+  },
+  {
+    label: 'My Voice',
+    icon: myvoiceicon,
+    route: '/my-voice',
+    code: 'VOICE',
+    menuItems: [
+      { label: 'Complaints', route: '/complaints', code:'complaints' },
+      { label: 'Feedback/NPS', route: '/suggestions',code:'feedback' },
+    ],
+  },
+    {
+    label: 'About Tata Steel',
+    icon: aboutusicon,
+    code: 'ABOUT',
+    menuItems: [
+      { label: 'About Tata Steel', route: '/abouttatasteel',code:'about-tatasteel' },
+      { label: 'About Compass', route: '/about-compass',code:'about-compass' },
+    ],
+  },
 ];
 
-export default function AccountsPage() {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(0);
-  const rowsPerPage = 10;
+export { allModules }; // Export allModules
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const response = await SCVWebAPI.post(
-        "/CompassAccountSummary/GetInvoiceSummary",
-        {},
-        {},
-        {
-          SoldToParty: "0000102461",
-          ancilCustId: "",
-        }
-      );
+this was dashboard.js
+import React, { useState } from 'react';
+import '../Dashboard.scss';
+import { useNavigate } from 'react-router-dom';
+import { allModules } from '../utils/module-route';
+import Header from './Header/Header';
 
-      const transformedData = response.map((item) => ({
-        soldToParty: item.SoldToParty || "",
-        outstanding: item.Outstanding || "",
-        overdue: item.Overdue || "",
-      }));
+const Dashboard = ({ userModules }) => {
+  const navigate = useNavigate();
+  const [hoveredTile, setHoveredTile] = useState(null);
 
-      setData(transformedData);
-    } catch (error) {
-      alert("Error fetching accounts data:", error);
-    } finally {
-      setLoading(false);
-    }
+  // Show only tiles user has access to *any* menu item in
+  const modulesToShow = allModules.filter(mod =>
+    userModules.includes(mod.code) || mod.menuItems.some(item => userModules.includes(item.code))
+  );
+
+  const handleTileClick = (route) => {
+    navigate(route);
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const table = useReactTable({
-    data: data.slice(page * rowsPerPage, (page + 1) * rowsPerPage),
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
+  const handleMenuItemClick = (route, e) => {
+    e.stopPropagation(); // Prevent tile click when menu item is clicked
+    navigate(route);
+  };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
-        <button className="text-blue-600 font-medium">&lt; Back</button>
-        <h1 className="text-2xl font-bold">Accounts</h1>
-        <button className="bg-gray-100 px-3 py-1 rounded">Export</button>
+    <>
+      <Header />
+      <div className="dashboard-container">
+        <div className="tiles">
+          {modulesToShow.map(mod => {
+            // Filter menu items based on user access
+            const menuItemsToShow = mod.menuItems ? mod.menuItems.filter(item => userModules.includes(item.code)) : [];
+
+            // If the user has no access to any menu items, don't render the tile
+            if (menuItemsToShow.length === 0 && !userModules.includes(mod.code)) {
+              return null;
+            }
+
+            return (
+              <div
+                key={mod.code}
+                className="tile"
+                onMouseEnter={() => setHoveredTile(mod.code)}
+                onMouseLeave={() => setHoveredTile(null)}
+                onClick={() => handleTileClick(mod.route)}
+              >
+                <img src={mod.icon} alt={mod.label} className="icon" />
+                <div className="tile-label-container">
+                  <div className="tile-label">{mod.label}</div>
+                </div>
+
+                {hoveredTile === mod.code && menuItemsToShow.length > 0 && (
+                  <div className="hover-menu" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                    {menuItemsToShow.map(item => (
+                      <div
+                        key={item.label}
+                        className="menu-item"
+                        onClick={(e) => handleMenuItemClick(item.route, e)}
+                      >
+                        {item.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
+    </>
+  );
+};
 
-      {loading ? (
-        <div className="flex justify-center items-center h-40">
-          <CircularProgress
-            classNames={{
-              svg: "w-36 h-36 stroke-blue-700",
-              indicator: "stroke-blue-700",
-              track: "stroke-blue-700/5",
-              value: "text-3xl font-semibold text-blue-700",
-            }}
-            aria-label="Loading..."
-            showValueLabel={true}
-            value={75} // or dynamic value
-          />
-        </div>
-      ) : (
-        <div>
-          <table className="min-w-full border border-gray-200">
-            <thead className="bg-blue-900 text-white">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th key={header.id} className="p-2 text-left border-r border-white">
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="border-t">
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="p-2 border-r">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+export default Dashboard;
 
-          {/* Pagination */}
-          <div className="flex justify-between items-center mt-4 text-sm text-gray-700">
-            <div>
-              Rows per page:
-              <select
-                className="ml-2 border rounded px-1 py-0.5"
-                value={rowsPerPage}
-                disabled
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={30}>30</option>
-              </select>
-            </div>
-            <div>
-              {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, data.length)} of {data.length}
-            </div>
-            <div className="space-x-2">
-              <button onClick={() => setPage((p) => Math.max(p - 1, 0))} disabled={page === 0}>
-                &lt;
-              </button>
-              <button
-                onClick={() =>
-                  setPage((p) => (p + 1) * rowsPerPage < data.length ? p + 1 : p)
-                }
-                disabled={(page + 1) * rowsPerPage >= data.length}
-              >
-                &gt;
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+App.js
+import './App.scss';
+import React from 'react';
+import {
+  HashRouter as Router,
+  Routes,
+  Route,
+  Navigate // Import Navigate
+} from 'react-router-dom';
+import Dashboard from './components/Dashboard';
+import TrackOrdersPage from './pages/TrackOrdersPage';
+import PlanOrdersPage from './pages/PlanOrdersPage';
+import DashboardsPage from './pages/DashboardsPage';
+import ProductsPage from './pages/ProductsPage';
+import Login from './components/Login';
+import MOUPage from './components/Mou/MOUPage';
+import NewExecutiveSummaryPage from './pages/NewExecutiveSummaryPage';
+import NewInventoryPage from './pages/NewInventoryPage'
+import Autoinventory from './components/AutoInventory/AutoInventory'
+import AccountsPagenew from './components/Accounts/AccountsPagenew';
+import AuthGuard from './components/AuthGuard';
+import {useSelector} from 'react-redux';
+import InvoiceTC from './components/Invoice/InvoiceTC';
+
+function App() {
+  const auth = useSelector((state) => state.auth); 
+
+  console.log("User Modules:", userModules); // Log the generated userModules array
+  let userModules = [];
+    if (auth.userInfo && auth.userInfo.moduleAccess) {
+    if (Array.isArray(auth.userInfo.moduleAccess)) {
+      userModules = auth.userInfo.moduleAccess;
+    } else if (typeof auth.userInfo.moduleAccess === 'string') {
+      userModules = auth.userInfo.moduleAccess.split('$$');
+    } else {
+      console.warn("auth.userInfo.moduleAccess is not a valid array or string. Using default empty array.");
+      userModules = []; // Default to empty array
+    }
+  } else {
+    console.warn("auth.userInfo or auth.userInfo.moduleAccess is undefined. Using default empty array.");
+    userModules = []; // Default to empty array
+  }
+  userModules = [...userModules, "ABOUT", "about-tatasteel", "about-compass","complaints","feedback"];
+  console.log("User Modules:", userModules); // Log the generated userModules array
+
+
+  return (
+    <Router>
+      <Routes>
+        {/* Redirect from root to /login */}
+        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/executive-summary" element={<NewExecutiveSummaryPage />}/>
+        <Route path="/new-inv" element={<NewInventoryPage />}/>
+        <Route path="/login" element={<Login />} />
+        <Route path="/dashboard" element={<Dashboard userModules={userModules} />} />
+        <Route path="/track-orders" element={<TrackOrdersPage />} />
+        <Route path="/plan-orders" element={<PlanOrdersPage />} />
+        <Route path="/products" element={<ProductsPage />} />
+        <Route path="/dashboards" element={<DashboardsPage />} />
+        <Route path="/mou" element={<MOUPage />} />
+        <Route path="/auto-inv" element={<Autoinventory />} />
+        {/* <Route path="/accounts" element={<AccountsPagenew />} /> */}
+        <Route path="/accounts" element={<AuthGuard userModules={userModules} requiredCode="accounts"><AccountsPagenew /></AuthGuard>} />
+        <Route path="/invoice-tc" element={<InvoiceTC />} />
+
+      </Routes>
+    </Router>
   );
 }
+
+export default App;
+
+
+Use similar logic for navigation
